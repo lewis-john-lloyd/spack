@@ -62,7 +62,6 @@ class Linux(Platform):
             self.front_end = self.default
             self.back_end = self.default
 
-        print self.default
         if self.default not in self.targets:
             self.add_target(self.default, Target(self.default))
 
@@ -190,7 +189,7 @@ class Linux(Platform):
                 if '72' not in model:
                     # All knl we know of have model numbers beginning '72'.
                     return ''
-                return 'mic-knl'
+                return 'knl'
             else:
                 # We won't go back all the way to Xeon 3000, 5000, etc series.
                 # Processors with those models should be in the dict.

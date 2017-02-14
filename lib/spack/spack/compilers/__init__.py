@@ -16,6 +16,7 @@ import six
 import llnl.util.lang
 import llnl.util.filesystem as fs
 import llnl.util.tty as tty
+from llnl.util.cpu_name import get_cpu_name
 
 import spack.paths
 import spack.error
@@ -639,7 +640,7 @@ def make_compiler_list(detected_versions):
         paths = [paths.get(l, None) for l in ('cc', 'cxx', 'f77', 'fc')]
         implicit_rpaths = compiler_cls.determine_implicit_rpaths(paths)
         compiler = compiler_cls(
-            spec, operating_system, py_platform.machine(), paths,
+            spec, operating_system, get_cpu_name(), paths,
             implicit_rpaths=implicit_rpaths
         )
         return [compiler]

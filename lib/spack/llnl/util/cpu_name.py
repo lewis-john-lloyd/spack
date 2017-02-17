@@ -100,9 +100,17 @@ def create_dict_from_sysctl():
         sysctl = which('sysctl')
         sysctl.add_default_arg('-n')
 
-        cpuinfo['flags'] = sysctl('machdep.cpu.features', output=str)
-        cpuinfo['model'] = sysctl('machdep.cpu.model', output=str)
-        cpuinfo['model name'] = sysctl('machdep.cpu.brand_string', output=str)
+        vendor = sysctl('machdep.cpu.vendor', output=str).strip()
+        cpuinfo['vendor_id'] = vendor
+
+        flags = sysctl('machdep.cpu.features', output=str).strip().lower()
+        cpuinfo['flags'] = flags
+
+        model = sysctl('machdep.cpu.model', output=str).strip()
+        cpuinfo['model'] = model
+
+        model_name = sysctl('machdep.cpu.brand_string', output=str).strip()
+        cpuinfo['model name'] = model_name
     except:
         pass
     return cpuinfo

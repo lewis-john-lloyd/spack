@@ -26,32 +26,59 @@ from spack.util.executable import which
 import platform
 import re
 
-_known_intel_names_by_number = {0x06: 'presler',
-                                0x16: 'merom',
-                                0x0f: 'merom',
-                                0x1d: 'penryn',
-                                0x17: 'penryn',
-                                0x2e: 'nehalem',
-                                0x1a: 'nehalem',
-                                0x1e: 'nehalem',
-                                0x2f: 'westmere',
-                                0x2c: 'westmere',
-                                0x25: 'westmere',
-                                0x2d: 'sandybridge',
-                                0x2a: 'sandybridge',
-                                0x3a: 'ivybridge',
-                                0x3e: 'ivybridge',
-                                0x3c: 'haswell',
-                                0x3f: 'haswell',
-                                0x45: 'haswell',
-                                0x46: 'haswell',
-                                0x3d: 'broadwell',
-                                0x4f: 'broadwell',
-                                0x1c: 'atom',
-                                0x26: 'atom',
-                                0x36: 'atom',
-                                0x4d: 'atom'
-                                }
+_known_intel_names_by_number = {
+    0x06: 'presler',
+    0x16: 'merom',
+    0x0f: 'merom',
+    0x1d: 'penryn',
+    0x17: 'penryn',
+    0x2e: 'nehalem',
+    0x1a: 'nehalem',
+    0x1e: 'nehalem',
+    0x2f: 'westmere',
+    0x2c: 'westmere',
+    0x25: 'westmere',
+    0x2d: 'sandybridge',
+    0x2a: 'sandybridge',
+    0x3a: 'ivybridge',
+    0x3e: 'ivybridge',
+    0x3c: 'haswell',
+    0x3f: 'haswell',
+    0x45: 'haswell',
+    0x46: 'haswell',
+    0x3d: 'broadwell',
+    0x47: 'broadwell',
+    0x4f: 'broadwell',
+    0x56: 'broadwell',
+    0x1c: 'atom',
+    0x26: 'atom',
+    0x36: 'atom',
+    0x4d: 'atom'
+    }
+
+_intel_32 = [
+    ('i686', []),
+    ('pentium2', ['mmx']),
+    ('pentium3', ['sse']),
+    ('pentium4', ['sse2']),
+    ('prescott', ['sse3']),
+    ]
+
+_intel_64 = [
+    ('x86_64', ['lm']),
+    ('core2', ['mmx', 'sse', 'sse2', 'ssse3']),
+    ('nehalem', ['sse4_1', 'sse4_2', 'popcnt']),
+    ('westmere', ['aes', 'pclmulqdq']),
+    ('sandybridge', ['avx']),
+    ('ivybridge', ['fsgsbase', 'rdrand', 'f16c']),
+    ('haswell', ['movbe', 'avx2', 'fma', 'bmi1', 'bmi2']),
+    ('broadwell', ['rdseed', 'adx']),
+    ('skylake', ['xsavec', 'xsaves'])
+    ]
+
+# We will need to build on these and combine with names when intel releases
+# further avx512 processors.
+# _intel_avx12 = ['avx512f', 'avx512cd']
 
 def create_dict_from_cpuinfo():
     # Initialize cpuinfo from file
@@ -67,24 +94,32 @@ def create_dict_from_cpuinfo():
         return None
     return cpuinfo
 
+def create_dict_from_sysctl():
+    cpuinfo = {}
+    # TODO: This function
+    return cpuinfo
+
 def get_cpu_name():
-    name = get_cpu_name_from_cpuinfo()
+    name = get_cpu_name_helper(platform.system())
     return name if name else platform.machine()
 
-def get_cpu_name_from_cpuinfo():
+def get_cpu_name_helper(system):
     # TODO: Elsewhere create dict of codenames (targets) and flag sets.
     # Return cpu name or an empty string if one cannot be determined.
-    cpuinfo = create_dict_from_cpuinfo()
+    cpuinfo = {}
+    if system == 'Linux':
+        cpuinfo = create_dict_from_cpuinfo()
+    elif system == 'Darwin':
+        cpuinfo = create_dict_from_sysctl()
     if not cpuinfo:
         return ''
 
     if 'vendor_id' in cpuinfo and cpuinfo['vendor_id'] == 'GenuineIntel':
-        if 'model name' not in cpuinfo or 'model' not in cpuinfo:
+        if 'model name' not in cpuinfo or 'flags' not in cpuinfo:
             # We don't have the information we need to determine the
             # microarchitecture name
             return ''
-        return get_intel_cpu_name(cpuinfo['model name'],
-                                       int(cpuinfo['model']))
+        return get_intel_cpu_name(cpuinfo)
     elif 'vendor_id' in cpuinfo and cpuinfo['vendor_id'] == 'AuthenticAMD':
         if 'model name' not in cpuinfo:
             # We don't have the information we need to determine the
@@ -100,71 +135,30 @@ def get_ibm_cpu_name(cpu):
     power_pattern = re.compile('POWER(\d+)')
     power_match = power_pattern.search(cpu)
     if power_match:
+        if 'le' in platform.machine():
+            return 'power' + power_match.group(1) + 'le'
         return 'power' + power_match.group(1)
     else:
         return ''
 
-def get_intel_cpu_name(model, number):
-    if number in _known_intel_names_by_number:
-        return _known_intel_names_by_number[number]
-    if 'Xeon' in model:
-        if 'E3-' in model or 'E5-' in model or 'E7-' in model:
-            if 'v4' in model:
-                return 'broadwell'
-            elif 'v3' in model:
-                return 'haswell'
-            elif 'v2' in model:
-                return 'ivybridge'
-            elif 'E3-' in model or 'E5-' in model:
-                return 'sandybridge'
-            elif 'E7-' in model:
-                return 'westmere'
-            else:
-                return ''
-        elif 'D-1' in model:
-            return 'broadwell'
-        elif 'Phi' in model:
-            # KNC was a coprocessor, would not show up here.
-            if '72' not in model:
-                # All knl we know of have model numbers beginning '72'.
-                return ''
-            return 'knl'
-        else:
-            # We won't go back all the way to Xeon 3000, 5000, etc series.
-            # Processors with those models should be in the dict.
-            return ''
-    elif 'Core' in model:
-        # Some of these patterns don't work for older models.
-        # Fortunately, those models are in the known names dict
-        # and will not fall into this code.
-        if 'i3-5' in model or 'i5-5' in model or 'i7-5' in model:
-            if '960X' in model or '930K' in model or '820K' in model:
-                return 'haswell'
-            else:
-                return 'broadwell'
-        elif 'i3-4' in model or 'i5-4' in model or 'i7-4' in model:
-            if '960X' in model or '930K' in model or '820K' in model:
-                return 'ivybridge'
-            else:
-                return 'haswell'
-        elif 'i3-3' in model or 'i5-3' in model or 'i7-3' in model:
-            if '960X' in model or '930K' in model or '820K' in model:
-                return 'sandybridge'
-            else:
-                return 'ivybridge'
-        elif 'i3-2' in model or 'i5-2' in model or 'i7-2' in model:
-            return 'sandybridge'
-        elif 'M-5' in model:
-            return 'broadwell'
-        else:
-            return ''
-    elif 'Celeron' in model:
-        return ''
-    elif 'Pentium' in model:
-        return ''
-    elif 'Atom' in model:
-        # Known bug: some atom processors will incorrectly return 'Core'
-        # Solution: If you have one of those systems, patch it and reboot.
+def get_intel_cpu_name(cpuinfo):
+    model_number = int(cpuinfo['model'])
+    if model_number in _known_intel_names_by_number:
+        return _known_intel_names_by_number[model_number]
+    model_name = cpuinfo['model name']
+    if 'Atom' in model_name:
         return 'atom'
+    elif 'Quark' in model_name:
+        return 'quark'
+    elif 'Xeon' in model_name and 'Phi' in model_name:
+        return 'knl'
     else:
-        return ''
+        ret = ''
+        flag_list = cpuinfo['flags'].split()
+        flags_dict = _intel_64 if platform.machine() == 'x86_64' else _intel_32
+        proc_flags = []
+        for proc, proc_flags_added in flags_dict:
+            proc_flags.extend(proc_flags_added)
+            if all(f in flag_list for f in proc_flags):
+                ret = proc
+        return ret

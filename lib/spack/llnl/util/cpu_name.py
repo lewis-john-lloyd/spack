@@ -96,7 +96,15 @@ def create_dict_from_cpuinfo():
 
 def create_dict_from_sysctl():
     cpuinfo = {}
-    # TODO: This function
+    try:
+        sysctl = which('sysctl')
+        sysctl.add_default_arg('-n')
+
+        cpuinfo['flags'] = sysctl('machdep.cpu.features', output=str)
+        cpuinfo['model'] = sysctl('machdep.cpu.model', output=str)
+        cpuinfo['model name'] = sysctl('machdep.cpu.brand_string', output=str)
+    except:
+        pass
     return cpuinfo
 
 def get_cpu_name():
@@ -115,7 +123,8 @@ def get_cpu_name_helper(system):
         return ''
 
     if 'vendor_id' in cpuinfo and cpuinfo['vendor_id'] == 'GenuineIntel':
-        if 'model name' not in cpuinfo or 'flags' not in cpuinfo:
+        if 'model' not in cpuinfo and ('model name' not in cpuinfo or
+                                            'flags' not in cpuinfo):
             # We don't have the information we need to determine the
             # microarchitecture name
             return ''
@@ -125,7 +134,7 @@ def get_cpu_name_helper(system):
             # We don't have the information we need to determine the
             # microarchitecture name
             return ''
-        return get_amd_cpu_name(cpuinfo['model name'])
+        return get_amd_cpu_name(cpuinfo)
     elif 'cpu' in cpuinfo and 'POWER' in cpuinfo['cpu']:
         return get_ibm_cpu_name(cpuinfo['cpu'])
     else:
@@ -162,3 +171,6 @@ def get_intel_cpu_name(cpuinfo):
             if all(f in flag_list for f in proc_flags):
                 ret = proc
         return ret
+
+def get_amd_cpu_name(cpuinfo):
+    return ''

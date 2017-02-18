@@ -97,21 +97,14 @@ def create_dict_from_cpuinfo():
 def create_dict_from_sysctl():
     cpuinfo = {}
     try:
-        vendor = subprocess.check_output(['sysctl', '-n',
+        cpuinfo['vendor_id'] = subprocess.check_output(['sysctl', '-n',
                                   'machdep.cpu.vendor']).strip()
-        cpuinfo['vendor_id'] = vendor
-
-        flags = subprocess.check_output(['sysctl', '-n',
+        cpuinfo['flags'] = subprocess.check_output(['sysctl', '-n',
                                  'machdep.cpu.features']).strip().lower()
-        cpuinfo['flags'] = flags
-
-        model = subprocess.check_output(['sysctl', '-n',
+        cpuinfo['model'] = subprocess.check_output(['sysctl', '-n',
                                          'machdep.cpu.model']).strip()
-        cpuinfo['model'] = model
-
-        model_name = subprocess.check_output(['sysctl', '-n',
+        cpuinfo['model name'] = subprocess.check_output(['sysctl', '-n',
                                           'machdep.cpu.brand_string']).strip()
-        cpuinfo['model name'] = model_name
     except:
         pass
     return cpuinfo

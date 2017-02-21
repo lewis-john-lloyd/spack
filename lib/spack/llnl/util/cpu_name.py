@@ -152,9 +152,9 @@ def get_ibm_cpu_name(cpu):
         return ''
 
 def get_intel_cpu_name(cpuinfo):
-#    model_number = int(cpuinfo['model'])
-#    if model_number in _known_intel_names_by_number:
-#        return _known_intel_names_by_number[model_number]
+    model_number = int(cpuinfo['model'])
+    if model_number in _known_intel_names_by_number:
+        return _known_intel_names_by_number[model_number]
     model_name = cpuinfo['model name']
     if 'Atom' in model_name:
         return 'atom'

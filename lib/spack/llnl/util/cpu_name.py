@@ -56,17 +56,16 @@ _known_intel_names_by_number = {
     0x4d: 'atom'
     }
 
-_intel_32 = [
+# Tuple of name, flags added, flags removed (default [])
+_intel_processors = [
     ('i686', []),
     ('pentium2', ['mmx']),
     ('pentium3', ['sse']),
     ('pentium4', ['sse2']),
     ('prescott', ['sse3']),
-    ]
-
-_intel_64 = [
-    ('x86_64', ['lm']),
-    ('core2', ['mmx', 'sse', 'sse2', 'ssse3']),
+    ('x86_64', ['lm'], ['mmx', 'sse', 'sse2', 'sse3']),
+    ('nocona', ['sse3'])
+    ('core2', ['mmx', 'sse', 'sse2', 'ssse3'], ['sse3']),
     ('nehalem', ['sse4_1', 'sse4_2', 'popcnt']),
     ('westmere', ['aes', 'pclmulqdq']),
     ('sandybridge', ['avx']),
@@ -153,23 +152,29 @@ def get_ibm_cpu_name(cpu):
         return ''
 
 def get_intel_cpu_name(cpuinfo):
-    model_number = int(cpuinfo['model'])
-    if model_number in _known_intel_names_by_number:
-        return _known_intel_names_by_number[model_number]
+#    model_number = int(cpuinfo['model'])
+#    if model_number in _known_intel_names_by_number:
+#        return _known_intel_names_by_number[model_number]
     model_name = cpuinfo['model name']
     if 'Atom' in model_name:
         return 'atom'
     elif 'Quark' in model_name:
         return 'quark'
     elif 'Xeon' in model_name and 'Phi' in model_name:
+        # This is hacky and needs to be extended for newer avx512 chips
         return 'knl'
     else:
         ret = ''
         flag_list = cpuinfo['flags'].split()
-        flags_dict = _intel_64 if platform.machine() == 'x86_64' else _intel_32
         proc_flags = []
-        for proc, proc_flags_added in flags_dict:
-            proc_flags.extend(proc_flags_added)
+        for entry in _intel_processors:
+            try:
+                proc, flags_added, flags_removed = entry
+            except ValueError:
+                proc, flags_added = entry
+                flags_removed = []
+            proc_flags = filter(lambda x: x not in flags_removed, proc_flags)
+            proc_flags.extend(flags_added)
             if all(f in flag_list for f in proc_flags):
                 ret = proc
         return ret

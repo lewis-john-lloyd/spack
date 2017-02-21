@@ -64,7 +64,7 @@ _intel_processors = [
     ('pentium4', ['sse2']),
     ('prescott', ['sse3']),
     ('x86_64', ['lm'], ['mmx', 'sse', 'sse2', 'sse3']),
-    ('nocona', ['sse3'])
+    ('nocona', ['sse3']),
     ('core2', ['mmx', 'sse', 'sse2', 'ssse3'], ['sse3']),
     ('nehalem', ['sse4_1', 'sse4_2', 'popcnt']),
     ('westmere', ['aes', 'pclmulqdq']),

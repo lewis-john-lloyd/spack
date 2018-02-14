@@ -115,18 +115,24 @@ def create_dict_from_cpuinfo():
         return None
     return cpuinfo
 
+def check_output(args):
+    if sys.version_info >= (3, 0):
+        return subprocess.run(args, check=True, stdout=PIPE).stdout # nopyqver
+    else:
+        return subprocess.check_output(args) # nopyqver
+
 def create_dict_from_sysctl():
     cpuinfo = {}
     try:
-        cpuinfo['vendor_id'] = subprocess.check_output(['sysctl', '-n',
+        cpuinfo['vendor_id'] = check_output(['sysctl', '-n',
                                   'machdep.cpu.vendor']).strip()
-        cpuinfo['flags'] = subprocess.check_output(['sysctl', '-n',
+        cpuinfo['flags'] = check_output(['sysctl', '-n',
                                  'machdep.cpu.features']).strip().lower()
-        cpuinfo['flags'] += ' ' + subprocess.check_output(['sysctl', '-n',
+        cpuinfo['flags'] += ' ' + check_output(['sysctl', '-n',
                                  'machdep.cpu.leaf7_features']).strip().lower()
-        cpuinfo['model'] = subprocess.check_output(['sysctl', '-n',
+        cpuinfo['model'] = check_output(['sysctl', '-n',
                                          'machdep.cpu.model']).strip()
-        cpuinfo['model name'] = subprocess.check_output(['sysctl', '-n',
+        cpuinfo['model name'] = check_output(['sysctl', '-n',
                                           'machdep.cpu.brand_string']).strip()
 
         # Super hacky way to deal with slight representation differences

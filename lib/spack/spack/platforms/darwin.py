@@ -21,6 +21,7 @@ class Darwin(Platform):
         self.add_target('broadwell', Target('broadwell'))
         self.add_target('ivybridge', Target('ivybridge'))
         self.add_target('sandybridge', Target('sandybridge'))
+        self.add_target('core2', Target('core2'))
 
         # Add "basic" architectures
         self.add_target('x86_64', Target('x86_64'))

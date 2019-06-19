@@ -8,6 +8,7 @@ from spack.architecture import Platform, Target
 from spack.operating_systems.linux_distro import LinuxDistro
 from llnl.util.cpu_name import get_cpu_name
 
+
 class Linux(Platform):
     priority    = 90
 

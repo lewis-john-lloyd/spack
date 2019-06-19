@@ -60,7 +60,6 @@ import inspect
 
 import llnl.util.tty as tty
 from llnl.util.lang import memoized, list_modules, key_ordering
-from llnl.util.cpu_name import get_cpu_name
 
 import spack.compiler
 import spack.paths

@@ -28,17 +28,23 @@ import subprocess
 import sys
 import os
 import json
+
+import six
+
 from ordereddict_backport import OrderedDict
 
+
 class Target(object):
-    def __init__(self, name, parents, vendor, features, compilers, generation=0):
+    def __init__(
+            self, name, parents, vendor, features, compilers, generation=0
+    ):
         self.name = name
         self.ancestors = parents
         for parent in parents:
             self.ancestors.extend(
                 list(filter(lambda a: a not in self.ancestors,
                             parent.ancestors))
-                )
+            )
         self.vendor = vendor
         self.features = features
         self.compilers = compilers
@@ -60,20 +66,19 @@ class Target(object):
 
     def __str__(self):
         return self.name
-    def __repr__(self):
-        return self.name
 
 
 def targets_from_json():
-    filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'targets.json')
+    this_dir = os.path.dirname(os.path.abspath(__file__))
+    filename = os.path.join(this_dir, 'targets.json')
     with open(filename, 'r') as f:
         data = json.loads(f.read(), object_pairs_hook=OrderedDict)
-    
+
     targets = OrderedDict()
     for name, values in data.items():
         # Get direct parents of target
         parents = values['from']
-        if isinstance(parents, basestring):
+        if isinstance(parents, six.string_types):
             parents = [parents]
         if parents is None:
             parents = []
@@ -87,7 +92,9 @@ def targets_from_json():
         features = set(values['features'])
         compilers = values.get('compilers', {})
         generation = values.get('generation', 0)
-        targets[name] = Target(name, parents, vendor, features, compilers, generation)
+        targets[name] = Target(
+            name, parents, vendor, features, compilers, generation
+        )
 
     return targets
 
@@ -125,24 +132,30 @@ def create_dict_from_proc():
 
 def check_output(args):
     if sys.version_info >= (3, 0):
-        return subprocess.run(args, check=True, stdout=subprocess.PIPE).stdout # nopyqver
+        return subprocess.run(
+            args, check=True, stdout=subprocess.PIPE).stdout  # nopyqver
     else:
-        return subprocess.check_output(args) # nopyqver
+        return subprocess.check_output(args)  # nopyqver
 
 
 def create_dict_from_sysctl():
     cpuinfo = {}
     try:
-        cpuinfo['vendor_id'] = check_output(['sysctl', '-n',
-                                  'machdep.cpu.vendor']).strip()
-        cpuinfo['flags'] = check_output(['sysctl', '-n',
-                                 'machdep.cpu.features']).strip().lower()
-        cpuinfo['flags'] += ' ' + check_output(['sysctl', '-n',
-                                 'machdep.cpu.leaf7_features']).strip().lower()
-        cpuinfo['model'] = check_output(['sysctl', '-n',
-                                         'machdep.cpu.model']).strip()
-        cpuinfo['model name'] = check_output(['sysctl', '-n',
-                                          'machdep.cpu.brand_string']).strip()
+        cpuinfo['vendor_id'] = check_output(
+            ['sysctl', '-n', 'machdep.cpu.vendor']
+        ).strip()
+        cpuinfo['flags'] = check_output(
+            ['sysctl', '-n', 'machdep.cpu.features']
+        ).strip().lower()
+        cpuinfo['flags'] += ' ' + check_output(
+            ['sysctl', '-n', 'machdep.cpu.leaf7_features']
+        ).strip().lower()
+        cpuinfo['model'] = check_output(
+            ['sysctl', '-n', 'machdep.cpu.model']
+        ).strip()
+        cpuinfo['model name'] = check_output(
+            ['sysctl', '-n', 'machdep.cpu.brand_string']
+        ).strip()
 
         # Super hacky way to deal with slight representation differences
         # Would be better to somehow consider these "identical"
@@ -152,7 +165,7 @@ def create_dict_from_sysctl():
             cpuinfo['flags'] += ' sse4_2'
         if 'avx1.0' in cpuinfo['flags']:
             cpuinfo['flags'] += ' avx'
-    except:
+    except Exception:
         pass
     return cpuinfo
 
@@ -170,17 +183,19 @@ def get_cpu_name():
 
     # Reverse sort of the depth for the inheritance tree among only targets we
     # can use. This gets the newest target we satisfy.
-    return sorted(list(filter(tester, targets.values())), 
+    return sorted(list(filter(tester, targets.values())),
                   key=lambda t: len(t.ancestors), reverse=True)[0].name
 
 
 def get_power_target_tester(cpuinfo, basename):
-    generation = int(re.search(r'POWER(\d+)', cpuinfo.get('cpu', '')).matches(1))
+    generation = int(
+        re.search(r'POWER(\d+)', cpuinfo.get('cpu', '')).matches(1)
+    )
 
     def can_use(target):
         # We can use a target if it descends from our machine type and our
         # generation (9 for POWER9, etc) is at least its generation.
-        return ((target == targets[basename] or 
+        return ((target == targets[basename] or
                  targets[basename] in target.ancestors) and
                 target.generation <= generation)
 
@@ -194,9 +209,9 @@ def get_x86_target_tester(cpuinfo, basename):
     def can_use(target):
         # We can use a target if it descends from our machine type, is from our
         # vendor, and we have all of its features
-        return ((target == targets[basename] 
-                 or targets[basename] in target.ancestors) and 
-                (target.vendor == vendor or target.vendor == 'generic') and 
+        return ((target == targets[basename]
+                 or targets[basename] in target.ancestors) and
+                (target.vendor == vendor or target.vendor == 'generic') and
                 target.features.issubset(features))
 
     return can_use

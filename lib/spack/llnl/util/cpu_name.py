@@ -25,10 +25,11 @@
 import platform
 import re
 import subprocess
+import sys
 
 
 # Tuple of name, flags added, flags removed (default [])
-_intel_processors = [
+_intel_32 = [
     ('i686', []),
     ('pentium2', ['mmx']),
     ('pentium3', ['sse']),
@@ -202,7 +203,7 @@ def get_intel_cpu_name(cpuinfo):
         ret = ''
         flag_list = cpuinfo['flags'].split()
         proc_flags = []
-        for _intel_processors in [_intel_32, _intel_32]:
+        for _intel_processors in [_intel_32, _intel_64]:
             for entry in _intel_processors:
                 try:
                     proc, flags_added, flags_removed = entry

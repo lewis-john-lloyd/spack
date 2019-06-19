@@ -125,7 +125,7 @@ def create_dict_from_proc():
 
 def check_output(args):
     if sys.version_info >= (3, 0):
-        return subprocess.run(args, check=True, stdout=PIPE).stdout # nopyqver
+        return subprocess.run(args, check=True, stdout=subprocess.PIPE).stdout # nopyqver
     else:
         return subprocess.check_output(args) # nopyqver
 

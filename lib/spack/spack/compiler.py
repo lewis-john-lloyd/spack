@@ -208,10 +208,6 @@ class Compiler(object):
     def isa_flag(self):
         return '-march'
 
-    @property
-    def tuning_flag(self):
-        return '-mtune'
-
     # Cray PrgEnv name that can be used to load this compiler
     PrgEnv = None
     # Name of module used to switch versions of this compiler

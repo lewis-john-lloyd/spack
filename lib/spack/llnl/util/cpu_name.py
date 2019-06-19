@@ -39,7 +39,7 @@ _intel_32 = [
 
 _intel_64 = [ # commenting out the ones that aren't shown through sysctl
     ('nocona', ['mmx', 'sse', 'sse2', 'sse3']),#lm
-    ('core2', ['ssse3']),
+    ('core2', ['ssse3'], ['sse3']),
     ('nehalem', ['sse4_1', 'sse4_2', 'popcnt']),
     ('westmere', ['aes', 'pclmulqdq']),
     ('sandybridge', ['avx']),

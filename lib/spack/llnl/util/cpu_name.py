@@ -28,7 +28,7 @@ import subprocess
 import sys
 import os
 import json
-from collections import OrderedDict
+from ordereddict_backport import OrderedDict
 
 class Target(object):
     def __init__(self, name, parents, vendor, features, compilers, generation=0):
@@ -57,6 +57,11 @@ class Target(object):
                 self.ancestors == other.ancestors and
                 self.compilers == other.compilers and
                 self.generation == other.generation)
+
+    def __str__(self):
+        return self.name
+    def __repr__(self):
+        return self.name
 
 
 def targets_from_json():
@@ -166,7 +171,7 @@ def get_cpu_name():
     # Reverse sort of the depth for the inheritance tree among only targets we
     # can use. This gets the newest target we satisfy.
     return sorted(list(filter(tester, targets.values())), 
-                  key=lambda t: len(t.ancestors), reverse=True)[0]
+                  key=lambda t: len(t.ancestors), reverse=True)[0].name
 
 
 def get_power_target_tester(cpuinfo, basename):

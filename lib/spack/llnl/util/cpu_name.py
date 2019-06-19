@@ -210,12 +210,10 @@ def get_intel_cpu_name(cpuinfo):
                 except ValueError:
                     proc, flags_added = entry
                     flags_removed = []
-                proc_flags = filter(lambda x: x not in flags_removed, proc_flags)
+                proc_flags = list(filter(lambda x: x not in flags_removed, proc_flags))
                 proc_flags.extend(flags_added)
                 if all(f in flag_list for f in proc_flags):
                     ret = proc
-                else:
-                    break
         return ret
 
 def get_amd_cpu_name(cpuinfo):

@@ -1,0 +1,597 @@
+{
+  "x86": {
+    "from": null,
+    "vendor": "generic",
+    "features": []
+  },
+  "i686": {
+    "from": "x86",
+    "vendor": "GenuineIntel",
+    "features": []
+  },
+  "pentium2": {
+    "from": "i686",
+    "features": [
+      "mmx"
+    ]
+  },
+  "pentium3": {
+    "from": "pentium2",
+    "features": [
+      "mmx",
+      "sse"
+    ]
+  },
+  "pentium4": {
+    "from": "pentium3",
+    "features": [
+      "mmx",
+      "sse",
+      "sse2"
+    ]
+  },
+  "prescott": {
+    "from": "pentium4",
+    "features": [
+      "mmx",
+      "sse",
+      "sse2",
+      "sse3"
+    ]
+  },
+  "x86_64": {
+    "from": null,
+    "vendor": "generic",
+    "features": []
+  },
+  "nocona": {
+    "from": "x86_64",
+    "vendor": "GenuineIntel",
+    "features": [
+      "mmx",
+      "sse",
+      "sse2",
+      "sse3"
+    ]
+  },
+  "core2": {
+    "from": "nocona",
+    "features": [
+      "mmx",
+      "sse",
+      "sse2",
+      "ssse3"
+    ]
+  },
+  "nehalem": {
+    "from": "core2",
+    "features": [
+      "mmx",
+      "sse",
+      "sse2",
+      "ssse3",
+      "sse4_1",
+      "sse4_2",
+      "popcnt"
+    ],
+    "compilers": {
+      "gcc": [
+        {
+          "versions": "4.9:"
+        },
+        {
+          "versions": ":4.8",
+          "name": "corei7"
+        }
+      ]
+    }
+  },
+  "westmere": {
+    "from": "nehalem",
+    "features": [
+      "mmx",
+      "sse",
+      "sse2",
+      "ssse3",
+      "sse4_1",
+      "sse4_2",
+      "popcnt",
+      "aes",
+      "pclmulqdq"
+    ]
+  },
+  "sandybridge": {
+    "from": "westmere",
+    "features": [
+      "mmx",
+      "sse",
+      "sse2",
+      "ssse3",
+      "sse4_1",
+      "sse4_2",
+      "popcnt",
+      "aes",
+      "pclmulqdq",
+      "avx"
+    ]
+  },
+  "ivybridge": {
+    "from": "sandybridge",
+    "features": [
+      "mmx",
+      "sse",
+      "sse2",
+      "ssse3",
+      "sse4_1",
+      "sse4_2",
+      "popcnt",
+      "aes",
+      "pclmulqdq",
+      "avx",
+      "rdrand",
+      "f16c"
+    ]
+  },
+  "haswell": {
+    "from": "ivybridge",
+    "features": [
+      "mmx",
+      "sse",
+      "sse2",
+      "ssse3",
+      "sse4_1",
+      "sse4_2",
+      "popcnt",
+      "aes",
+      "pclmulqdq",
+      "avx",
+      "rdrand",
+      "f16c",
+      "movbe",
+      "fma",
+      "avx2",
+      "bmi1",
+      "bmi2"
+    ]
+  },
+  "broadwell": {
+    "from": "haswell",
+    "features": [
+      "mmx",
+      "sse",
+      "sse2",
+      "ssse3",
+      "sse4_1",
+      "sse4_2",
+      "popcnt",
+      "aes",
+      "pclmulqdq",
+      "avx",
+      "rdrand",
+      "f16c",
+      "movbe",
+      "fma",
+      "avx2",
+      "bmi1",
+      "bmi2",
+      "rdseed",
+      "adx"
+    ],
+    "compilers": {
+      "gcc": {
+        "versions": "4.9:"
+      }
+    }
+  },
+  "skylake": {
+    "from": "broadwell",
+    "features": [
+      "mmx",
+      "sse",
+      "sse2",
+      "ssse3",
+      "sse4_1",
+      "sse4_2",
+      "popcnt",
+      "aes",
+      "pclmulqdq",
+      "avx",
+      "rdrand",
+      "f16c",
+      "movbe",
+      "fma",
+      "avx2",
+      "bmi1",
+      "bmi2",
+      "rdseed",
+      "adx",
+      "clflushopt",
+      "xsavec",
+      "xsaves"
+    ]
+  },
+  "skylake-avx512": {
+    "from": "skylake",
+    "features": [
+      "mmx",
+      "sse",
+      "sse2",
+      "ssse3",
+      "sse4_1",
+      "sse4_2",
+      "popcnt",
+      "aes",
+      "pclmulqdq",
+      "avx",
+      "rdrand",
+      "f16c",
+      "movbe",
+      "fma",
+      "avx2",
+      "bmi1",
+      "bmi2",
+      "rdseed",
+      "adx",
+      "clflushopt",
+      "xsavec",
+      "xsaves",
+      "avx512f",
+      "clwb",
+      "avx512vl",
+      "avx512bw",
+      "avx512dq",
+      "avx512cd"
+    ],
+    "compilers": {
+      "gcc": {
+        "versions": "5.3:"
+      }
+    }
+  },
+  "cannonlake": {
+    "from": "skylake",
+    "features": [
+      "mmx",
+      "sse",
+      "sse2",
+      "ssse3",
+      "sse4_1",
+      "sse4_2",
+      "popcnt",
+      "aes",
+      "pclmulqdq",
+      "avx",
+      "rdrand",
+      "f16c",
+      "movbe",
+      "fma",
+      "avx2",
+      "bmi1",
+      "bmi2",
+      "rdseed",
+      "adx",
+      "clflushopt",
+      "xsavec",
+      "xsaves",
+      "avx512f",
+      "avx512vl",
+      "avx512bw",
+      "avx512dq",
+      "avx512cd",
+      "avx512vbmi",
+      "avx512ifma",
+      "sha",
+      "umip"
+    ],
+    "compilers": {
+      "gcc": {
+        "versions": "8:"
+      }
+    }
+  },
+  "cascadelake": {
+    "from": "skylake-avx512",
+    "features": [
+      "mmx",
+      "sse",
+      "sse2",
+      "ssse3",
+      "sse4_1",
+      "sse4_2",
+      "popcnt",
+      "aes",
+      "pclmulqdq",
+      "avx",
+      "rdrand",
+      "f16c",
+      "movbe",
+      "fma",
+      "avx2",
+      "bmi1",
+      "bmi2",
+      "rdseed",
+      "adx",
+      "clflushopt",
+      "xsavec",
+      "xsaves",
+      "avx512f",
+      "clwb",
+      "avx512vl",
+      "avx512bw",
+      "avx512dq",
+      "avx512cd",
+      "avx512vnni"
+    ],
+    "compilers": {
+      "gcc": {
+        "versions": "9:"
+      }
+    }
+  },
+  "icelake": {
+    "from": [
+      "cascadelake",
+      "cannonlake"
+    ],
+    "features": [
+      "mmx",
+      "sse",
+      "sse2",
+      "ssse3",
+      "sse4_1",
+      "sse4_2",
+      "popcnt",
+      "aes",
+      "pclmulqdq",
+      "avx",
+      "rdrand",
+      "f16c",
+      "movbe",
+      "fma",
+      "avx2",
+      "bmi1",
+      "bmi2",
+      "rdseed",
+      "adx",
+      "clflushopt",
+      "xsavec",
+      "xsaves",
+      "avx512f",
+      "avx512vl",
+      "avx512bw",
+      "avx512dq",
+      "avx512cd",
+      "avx512vbmi",
+      "avx512ifma",
+      "sha",
+      "umip",
+      "clwb",
+      "rdpid",
+      "gfni",
+      "avx512vbmi2",
+      "avx512vpopcntdq",
+      "avx512bitalg",
+      "avx512vnni",
+      "vpclmulqdq",
+      "vaes"
+    ],
+    "compilers": {
+      "gcc": {
+        "name": "icelake-client",
+        "versions": "8:"
+      }
+    }
+  },
+  "barcelona": {
+    "from": "x86_64",
+    "vendor": "AuthenticAMD",
+    "features": [
+      "mmx",
+      "sse",
+      "sse2",
+      "sse3",
+      "sse4a",
+      "abm"
+    ]
+  },
+  "bulldozer": {
+    "from": "barcelona",
+    "features": [
+      "mmx",
+      "sse",
+      "sse2",
+      "sse3",
+      "sse4a",
+      "abm",
+      "fma4",
+      "avx",
+      "xop",
+      "lwp",
+      "aes",
+      "pcl_mul",
+      "cx16",
+      "ssse3",
+      "sse4_1",
+      "sse4_2"
+    ],
+    "compilers": {
+      "gcc": {
+        "name": "bdver1"
+      }
+    }
+  },
+  "piledriver": {
+    "from": "bulldozer",
+    "features": [
+      "mmx",
+      "sse",
+      "sse2",
+      "sse3",
+      "sse4a",
+      "abm",
+      "fma4",
+      "avx",
+      "xop",
+      "lwp",
+      "aes",
+      "pcl_mul",
+      "cx16",
+      "ssse3",
+      "sse4_1",
+      "sse4_2",
+      "bmi1",
+      "tbm",
+      "f16c",
+      "fma"
+    ],
+    "compilers": {
+      "gcc": {
+        "name": "bdver2"
+      }
+    }
+  },
+  "steamroller": {
+    "from": "piledriver",
+    "features": [
+      "mmx",
+      "sse",
+      "sse2",
+      "sse3",
+      "sse4a",
+      "abm",
+      "fma4",
+      "avx",
+      "xop",
+      "lwp",
+      "aes",
+      "pcl_mul",
+      "cx16",
+      "ssse3",
+      "sse4_1",
+      "sse4_2",
+      "bmi1",
+      "tbm",
+      "f16c",
+      "fma",
+      "fsgsbase"
+    ],
+    "compilers": {
+      "gcc": {
+        "name": "bdver3"
+      }
+    }
+  },
+  "excavator": {
+    "from": "steamroller",
+    "features": [
+      "mmx",
+      "sse",
+      "sse2",
+      "sse3",
+      "sse4a",
+      "abm",
+      "fma4",
+      "avx",
+      "xop",
+      "lwp",
+      "aes",
+      "pcl_mul",
+      "cx16",
+      "ssse3",
+      "sse4_1",
+      "sse4_2",
+      "bmi1",
+      "tbm",
+      "f16c",
+      "fma",
+      "fsgsbase",
+      "bmi2",
+      "avx2",
+      "movbe"
+    ],
+    "compilers": {
+      "gcc": {
+        "name": "bdver4"
+      }
+    }
+  },
+  "zen": {
+    "from": "barcelona",
+    "features": [
+      "bmi1",
+      "bmi2",
+      "f16c",
+      "fma",
+      "fsgsbase",
+      "avx",
+      "avx2",
+      "adcx",
+      "rdseed",
+      "mwaitx",
+      "sha",
+      "clzero",
+      "aes",
+      "pcl_mul",
+      "cx16",
+      "movbe",
+      "mmx",
+      "sse",
+      "sse2",
+      "sse3",
+      "sse4a",
+      "ssse3",
+      "sse4_1",
+      "sse4_2",
+      "abm",
+      "xsavec",
+      "xsaves",
+      "clflushopt",
+      "popcnt"
+    ],
+    "compilers": {
+      "gcc": {
+        "name": "znver1"
+      }
+    }
+  },
+  "zen2": {
+    "from": "barcelona",
+    "features": [
+      "bmi1",
+      "bmi2",
+      "f16c",
+      "fma",
+      "fsgsbase",
+      "avx",
+      "avx2",
+      "adcx",
+      "rdseed",
+      "mwaitx",
+      "sha",
+      "clzero",
+      "aes",
+      "pcl_mul",
+      "cx16",
+      "movbe",
+      "mmx",
+      "sse",
+      "sse2",
+      "sse3",
+      "sse4a",
+      "ssse3",
+      "sse4_1",
+      "sse4_2",
+      "abm",
+      "xsavec",
+      "xsaves",
+      "clflushopt",
+      "popcnt",
+      "clwb"
+    ],
+    "compilers": {
+      "gcc": {
+        "name": "znver2"
+      }
+    }
+  }
+}

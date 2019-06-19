@@ -42,7 +42,13 @@
   "x86_64": {
     "from": null,
     "vendor": "generic",
-    "features": []
+    "features": [],
+    "compilers": {
+      "gcc": {
+        "versions": "4:",
+        "name": "x86-64"
+      }
+    }
   },
   "nocona": {
     "from": "x86_64",
@@ -52,7 +58,12 @@
       "sse",
       "sse2",
       "sse3"
-    ]
+    ],
+    "compilers": {
+      "gcc": {
+        "versions": "4:"
+      }
+    }
   },
   "core2": {
     "from": "nocona",
@@ -61,7 +72,12 @@
       "sse",
       "sse2",
       "ssse3"
-    ]
+    ],
+    "compilers": {
+      "gcc": {
+        "versions": "4:"
+      }
+    }
   },
   "nehalem": {
     "from": "core2",
@@ -80,7 +96,7 @@
           "versions": "4.9:"
         },
         {
-          "versions": ":4.8",
+          "versions": "4.6:4.8",
           "name": "corei7"
         }
       ]
@@ -98,7 +114,12 @@
       "popcnt",
       "aes",
       "pclmulqdq"
-    ]
+    ],
+    "compilers": {
+      "gcc": {
+        "versions": "4.9:"
+      }
+    }
   },
   "sandybridge": {
     "from": "westmere",
@@ -113,7 +134,18 @@
       "aes",
       "pclmulqdq",
       "avx"
-    ]
+    ],
+    "compilers": {
+      "gcc": [
+        {
+          "versions": "4.9:"
+        },
+        {
+          "versions": "4.6:4.8",
+          "name": "corei7-avx"
+        }
+      ]
+    }
   },
   "ivybridge": {
     "from": "sandybridge",
@@ -130,7 +162,18 @@
       "avx",
       "rdrand",
       "f16c"
-    ]
+    ],
+    "compilers": {
+      "gcc": [
+        {
+          "versions": "4.9:"
+        },
+        {
+          "versions": ":4.8",
+          "name": "core-avx-i"
+        }
+      ]
+    }
   },
   "haswell": {
     "from": "ivybridge",
@@ -152,7 +195,18 @@
       "avx2",
       "bmi1",
       "bmi2"
-    ]
+    ],
+    "compilers": {
+      "gcc": [
+        {
+          "versions": "4.9:"
+        },
+        {
+          "versions": ":4.8",
+          "name": "core-avx2"
+        }
+      ]
+    }
   },
   "broadwell": {
     "from": "haswell",
@@ -416,7 +470,8 @@
     ],
     "compilers": {
       "gcc": {
-        "name": "bdver1"
+        "name": "bdver1",
+        "versions": "4.6:"
       }
     }
   },
@@ -446,7 +501,8 @@
     ],
     "compilers": {
       "gcc": {
-        "name": "bdver2"
+        "name": "bdver2",
+        "versions": "4.7:"
       }
     }
   },
@@ -477,7 +533,8 @@
     ],
     "compilers": {
       "gcc": {
-        "name": "bdver3"
+        "name": "bdver3",
+        "versions": "4.8:"
       }
     }
   },
@@ -511,7 +568,8 @@
     ],
     "compilers": {
       "gcc": {
-        "name": "bdver4"
+        "name": "bdver4",
+        "versions": "4.9:"
       }
     }
   },
@@ -550,7 +608,8 @@
     ],
     "compilers": {
       "gcc": {
-        "name": "znver1"
+        "name": "znver1",
+        "versions": "6:"
       }
     }
   },
@@ -590,7 +649,8 @@
     ],
     "compilers": {
       "gcc": {
-        "name": "znver2"
+        "name": "znver2",
+        "versions": "9:"
       }
     }
   }

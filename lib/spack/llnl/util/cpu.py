@@ -49,6 +49,10 @@ class Target(object):
         return self.name
 
 
+_generic_values = {'from': None,
+                   'vendor': 'generic',
+                   'features': []}
+
 def get_targets_from_json():
     # TODO: Simplify this logic using object_pairs_hook to OrderedDict
     # when we stop supporting python2.6
@@ -56,6 +60,9 @@ def get_targets_from_json():
     filename = os.path.join(this_dir, 'targets.json')
     with open(filename, 'r') as f:
         data = json.load(f)
+
+    if platform.machine() not in data:
+        data[platform.machine()] = generic_values
 
     targets = OrderedDict()
     for name in data:
@@ -164,7 +171,7 @@ def create_dict_from_sysctl():
     return cpuinfo
 
 
-def get_cpu_name():
+def get_cpu():
     cpuinfo = create_cpuinfo_dict()
     basename = platform.machine()
 
@@ -178,7 +185,7 @@ def get_cpu_name():
     # Reverse sort of the depth for the inheritance tree among only targets we
     # can use. This gets the newest target we satisfy.
     return sorted(list(filter(tester, targets.values())),
-                  key=lambda t: len(t.ancestors), reverse=True)[0].name
+                  key=lambda t: len(t.ancestors), reverse=True)[0]
 
 
 def get_power_target_tester(cpuinfo, basename):

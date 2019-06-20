@@ -53,6 +53,7 @@ _generic_values = {'from': None,
                    'vendor': 'generic',
                    'features': []}
 
+
 def get_targets_from_json():
     # TODO: Simplify this logic using object_pairs_hook to OrderedDict
     # when we stop supporting python2.6
@@ -62,7 +63,7 @@ def get_targets_from_json():
         data = json.load(f)
 
     if platform.machine() not in data:
-        data[platform.machine()] = generic_values
+        data[platform.machine()] = _generic_values
 
     targets = OrderedDict()
     for name in data:

@@ -48,6 +48,17 @@ class Target(object):
     def __str__(self):
         return self.name
 
+    @property
+    def architecture_family(self):
+        """Returns the architecture family a given target belongs to"""
+        # TODO: memoize this function
+        roots = [x for x in [self] + self.ancestors if not x.ancestors]
+        msg = "a target is expected to belong to just one architecture family"
+        msg += "[found {0}]".format(', '.join(str(x) for x in roots))
+        assert len(roots) == 1, msg
+
+        return roots.pop()
+
 
 _generic_values = {'from': None,
                    'vendor': 'generic',

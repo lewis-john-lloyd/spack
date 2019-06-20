@@ -183,13 +183,13 @@ class TestSpecSematics(object):
 
         check_unsatisfiable(
             'foo platform=linux',
-            'platform=test os=redhat6 target=x86_32')
+            'platform=test os=redhat6 target=x86')
         check_unsatisfiable(
             'foo os=redhat6',
             'platform=test os=debian6 target=x86_64')
         check_unsatisfiable(
             'foo target=x86_64',
-            'platform=test os=redhat6 target=x86_32')
+            'platform=test os=redhat6 target=x86')
 
         check_satisfies(
             'foo arch=test-None-None',
@@ -217,8 +217,8 @@ class TestSpecSematics(object):
             'foo platform=test target=default_target os=default_os',
             'platform=test os=default_os')
         check_unsatisfiable(
-            'foo platform=test target=x86_32 os=redhat6',
-            'platform=linux target=x86_32 os=redhat6')
+            'foo platform=test target=x86 os=redhat6',
+            'platform=linux target=x86 os=redhat6')
 
     def test_satisfies_dependencies(self):
         check_satisfies('mpileaks^mpich', '^mpich')

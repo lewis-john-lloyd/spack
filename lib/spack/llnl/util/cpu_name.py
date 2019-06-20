@@ -49,39 +49,50 @@ class Target(object):
         return self.name
 
 
-def targets_from_json():
+def get_targets_from_json():
     this_dir = os.path.dirname(os.path.abspath(__file__))
     filename = os.path.join(this_dir, 'targets.json')
     with open(filename, 'r') as f:
-        data = json.loads(f.read(), object_pairs_hook=OrderedDict)
+        data = json.load(f)
 
     targets = OrderedDict()
-    for name, values in data.items():
-        # Get direct parents of target
-        parents = values['from']
-        if isinstance(parents, six.string_types):
-            parents = [parents]
-        if parents is None:
-            parents = []
-        parents = [targets.get(p) for p in parents]
-
-        # Get target vendor
-        vendor = values.get('vendor', None)
-        if not vendor:
-            vendor = parents[0].vendor
-
-        features = set(values['features'])
-        compilers = values.get('compilers', {})
-        generation = values.get('generation', 0)
-        targets[name] = Target(
-            name, parents, vendor, features, compilers, generation
-        )
-
+    for name in data:
+        if name in targets:
+            # name was already brought in as ancestor to a target
+            continue
+        fill_target_from_dict(name, data, targets)
     return targets
 
 
-# Instantiated DAG forest of processor dependencies
-targets = targets_from_json()
+def fill_target_from_dict(name, data, targets):
+    values = data[name]
+
+    # Get direct parents of target
+    parents = values['from']
+    if isinstance(parents, six.string_types):
+        parents = [parents]
+    if parents is None:
+        parents = []
+    for p in [p for p in parents if p not in targets]:
+        # Recursively fill parents so they exist before we add them
+        fill_target_from_dict(p, data, targets)
+    parents = [targets.get(p) for p in parents]
+
+    # Get target vendor
+    vendor = values.get('vendor', None)
+    if not vendor:
+        vendor = parents[0].vendor
+
+    features = set(values['features'])
+    compilers = values.get('compilers', {})
+    generation = values.get('generation', 0)
+
+    targets[name] = Target(
+        name, parents, vendor, features, compilers, generation
+    )
+
+
+targets = get_targets_from_json()
 
 
 def supported_target_names():

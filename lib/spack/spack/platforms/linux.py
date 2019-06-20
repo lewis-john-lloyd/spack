@@ -15,7 +15,7 @@ class Linux(Platform):
     def __init__(self):
         super(Linux, self).__init__('linux')
 
-        for name in cpu.supported_targets():
+        for name in cpu.supported_target_names():
             self.add_target(name, Target(name))
 
         # Get specific default

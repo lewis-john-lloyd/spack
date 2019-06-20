@@ -50,6 +50,8 @@ class Target(object):
 
 
 def get_targets_from_json():
+    # TODO: Simplify this logic using object_pairs_hook to OrderedDict
+    # when we stop supporting python2.6
     this_dir = os.path.dirname(os.path.abspath(__file__))
     filename = os.path.join(this_dir, 'targets.json')
     with open(filename, 'r') as f:

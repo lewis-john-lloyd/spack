@@ -374,7 +374,7 @@ case "$mode" in
             CXX)
                 flags=("${flags[@]}" "${SPACK_CXXFLAGS[@]}") ;;
         esac
-        flags=("${SPACK_TARGET_ARGS[@]}" "${flags[@]}")
+        flags=(${SPACK_TARGET_ARGS[@]} "${flags[@]}")
         ;;
 esac
 

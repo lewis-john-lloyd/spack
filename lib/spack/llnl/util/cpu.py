@@ -3,23 +3,44 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
+import json
+import os
 import platform
 import re
 import subprocess
 import sys
-import os
-import json
 
 import six
 
 from ordereddict_backport import OrderedDict
 
 
-class Target(object):
+class MicroArchitecture(object):
     def __init__(
             self, name, parents, vendor, features, compilers, generation=0
     ):
+        """Represents a specific CPU micro-architecture.
+
+        Args:
+            name (str): name of the micro-architecture (e.g. skylake).
+            parents (list): list of parents micro-architectures (by features),
+                if any. For example, "skylake" will have "broadwell" as a
+                parent while "icelake" will have both "cascadelake" and
+                "cannonlake".
+            vendor (str): vendor of the micro-architecture
+            features (list of str): supported CPU flags. Note that the semantic
+                of the flags in this field might vary among architectures, if
+                at all present. For instance x86_64 processors will list all
+                the flags supported by a given CPU while Arm processors will
+                list instead only the flags that have been added on top of the
+                base model for the current micro-architecture.
+            compilers (dict): compiler support to generate tuned code for this
+                micro-architecture.
+            generation (int): generation of the micro-architecture, if
+                relevant.
+        """
         self.name = name
+        self.parents = parents
         self.ancestors = parents
         for parent in parents:
             self.ancestors.extend(
@@ -108,7 +129,7 @@ def fill_target_from_dict(name, data, targets):
     compilers = values.get('compilers', {})
     generation = values.get('generation', 0)
 
-    targets[name] = Target(
+    targets[name] = MicroArchitecture(
         name, parents, vendor, features, compilers, generation
     )
 

@@ -648,7 +648,7 @@ def make_compiler_list(detected_versions):
         spec = spack.spec.CompilerSpec(compiler_cls.name, version)
         paths = [paths.get(l, None) for l in ('cc', 'cxx', 'f77', 'fc')]
         implicit_rpaths = compiler_cls.determine_implicit_rpaths(paths)
-        target = cpu.get_cpu()
+        target = cpu.detect_host()
         compiler = compiler_cls(
             spec, operating_system, str(target.architecture_family), paths,
             implicit_rpaths=implicit_rpaths

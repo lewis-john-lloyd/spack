@@ -218,7 +218,7 @@ def _create_dict_from_sysctl():
     return cpuinfo
 
 
-def get_cpu():
+def detect_host():
     """Detects the host micro-architecture and returns it."""
     cpuinfo = _create_cpuinfo_dict()
     basename = platform.machine()

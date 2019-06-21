@@ -19,7 +19,7 @@ class Linux(Platform):
             self.add_target(name, Target(name))
 
         # Get specific default
-        self.default = cpu.get_cpu().name
+        self.default = cpu.detect_host().name
         self.front_end = self.default
         self.back_end = self.default
 

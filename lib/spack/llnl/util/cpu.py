@@ -81,21 +81,62 @@ class MicroArchitecture(object):
         return roots.pop()
 
 
-_generic_values = {'from': None,
-                   'vendor': 'generic',
-                   'features': []}
+def _load_targets_from_json():
+    """Loads all the known micro-architectures from JSON. If the current host
+    platform is unknown adds it too as a generic target.
 
+    Returns:
+        OrderedDict with all the known micro-architectures.
+    """
 
-def get_targets_from_json():
     # TODO: Simplify this logic using object_pairs_hook to OrderedDict
     # when we stop supporting python2.6
+
+    generic_values = {'from': None, 'vendor': 'generic', 'features': []}
+
+    def fill_target_from_dict(name, data, targets):
+        """Recursively fills targets by adding the micro-architecture
+        passed as argument and all its ancestors.
+
+        Args:
+            name (str): micro-architecture to be added to targets.
+            data (dict): raw data loaded from JSON.
+            targets (dict): dictionary that maps micro-architecture names
+                to ``MicroArchitecture`` objects
+        """
+        values = data[name]
+
+        # Get direct parents of target
+        parents = values['from']
+        if isinstance(parents, six.string_types):
+            parents = [parents]
+        if parents is None:
+            parents = []
+        for p in [p for p in parents if p not in targets]:
+            # Recursively fill parents so they exist before we add them
+            fill_target_from_dict(p, data, targets)
+        parents = [targets.get(p) for p in parents]
+
+        # Get target vendor
+        vendor = values.get('vendor', None)
+        if not vendor:
+            vendor = parents[0].vendor
+
+        features = set(values['features'])
+        compilers = values.get('compilers', {})
+        generation = values.get('generation', 0)
+
+        targets[name] = MicroArchitecture(
+            name, parents, vendor, features, compilers, generation
+        )
+
     this_dir = os.path.dirname(os.path.abspath(__file__))
     filename = os.path.join(this_dir, 'targets.json')
     with open(filename, 'r') as f:
         data = json.load(f)
 
     if platform.machine() not in data:
-        data[platform.machine()] = _generic_values
+        data[platform.machine()] = generic_values
 
     targets = OrderedDict()
     for name in data:
@@ -106,50 +147,23 @@ def get_targets_from_json():
     return targets
 
 
-def fill_target_from_dict(name, data, targets):
-    values = data[name]
-
-    # Get direct parents of target
-    parents = values['from']
-    if isinstance(parents, six.string_types):
-        parents = [parents]
-    if parents is None:
-        parents = []
-    for p in [p for p in parents if p not in targets]:
-        # Recursively fill parents so they exist before we add them
-        fill_target_from_dict(p, data, targets)
-    parents = [targets.get(p) for p in parents]
-
-    # Get target vendor
-    vendor = values.get('vendor', None)
-    if not vendor:
-        vendor = parents[0].vendor
-
-    features = set(values['features'])
-    compilers = values.get('compilers', {})
-    generation = values.get('generation', 0)
-
-    targets[name] = MicroArchitecture(
-        name, parents, vendor, features, compilers, generation
-    )
-
-
-targets = get_targets_from_json()
+targets = _load_targets_from_json()
 
 
 def supported_target_names():
     return targets.keys()
 
 
-def create_cpuinfo_dict():
-    system = platform.system()
-    if system == 'Linux':
-        return create_dict_from_proc()
-    elif system == 'Darwin':
-        return create_dict_from_sysctl()
+def _create_cpuinfo_dict():
+    """Returns a dictionary with information on the host CPU."""
+    dict_factory = {
+        'Linux': _create_dict_from_proc,
+        'Darwin': _create_dict_from_sysctl
+    }
+    return dict_factory[platform.system()]()
 
 
-def create_dict_from_proc():
+def _create_dict_from_proc():
     # Initialize cpuinfo from file
     cpuinfo = {}
     try:
@@ -164,15 +178,15 @@ def create_dict_from_proc():
     return cpuinfo
 
 
-def check_output(args):
-    if sys.version_info >= (3, 0):
-        return subprocess.run(
-            args, check=True, stdout=subprocess.PIPE).stdout  # nopyqver
-    else:
-        return subprocess.check_output(args)  # nopyqver
+def _create_dict_from_sysctl():
 
+    def check_output(args):
+        if sys.version_info >= (3, 0):
+            return subprocess.run(
+                args, check=True, stdout=subprocess.PIPE).stdout  # nopyqver
+        else:
+            return subprocess.check_output(args)  # nopyqver
 
-def create_dict_from_sysctl():
     cpuinfo = {}
     try:
         cpuinfo['vendor_id'] = check_output(
@@ -205,14 +219,16 @@ def create_dict_from_sysctl():
 
 
 def get_cpu():
-    cpuinfo = create_cpuinfo_dict()
+    """Detects the host micro-architecture and returns it."""
+    cpuinfo = _create_cpuinfo_dict()
     basename = platform.machine()
 
     if basename == 'x86_64':
-        tester = get_x86_target_tester(cpuinfo, basename)
+        tester = _get_x86_target_tester(cpuinfo, basename)
     elif basename in ('ppc64', 'ppc64le'):
-        tester = get_power_target_tester(cpuinfo, basename)
+        tester = _get_power_target_tester(cpuinfo, basename)
     else:
+        # FIXME: this should return a MicroArchitecture instance
         return basename
 
     # Reverse sort of the depth for the inheritance tree among only targets we
@@ -221,7 +237,8 @@ def get_cpu():
                   key=lambda t: len(t.ancestors), reverse=True)[0]
 
 
-def get_power_target_tester(cpuinfo, basename):
+def _get_power_target_tester(cpuinfo, basename):
+    """Returns a tester function for the Power architecture."""
     generation = int(
         re.search(r'POWER(\d+)', cpuinfo.get('cpu', '')).matches(1)
     )
@@ -236,7 +253,8 @@ def get_power_target_tester(cpuinfo, basename):
     return can_use
 
 
-def get_x86_target_tester(cpuinfo, basename):
+def _get_x86_target_tester(cpuinfo, basename):
+    """Returns a tester function for the x86_64 architecture."""
     vendor = cpuinfo.get('vendor_id', 'generic')
     features = set(cpuinfo.get('flags', '').split())
 

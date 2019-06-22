@@ -16,6 +16,7 @@ TODO: make this customizable and allow users to configure
 """
 from __future__ import print_function
 
+import platform
 import os.path
 import tempfile
 import llnl.util.filesystem as fs
@@ -27,6 +28,7 @@ from contextlib import contextmanager
 from six import iteritems
 
 import llnl.util.lang
+import llnl.util.cpu as cpu
 
 import spack.repo
 import spack.abi
@@ -234,30 +236,94 @@ class Concretizer(object):
         DAG has an architecture, then use the root otherwise use the defaults
         on the platform.
         """
-        try:
-            # Get the nearest architecture with any fields set
-            nearest = next(p for p in spec.traverse(direction='parents')
-                           if (p.architecture and p is not spec))
-            nearest_arch = nearest.architecture
-        except StopIteration:
-            # Default to the system architecture if nothing set
-            nearest_arch = spack.spec.ArchSpec(spack.architecture.sys_type())
-
-        spec_changed = False
-
         # ensure type safety for the architecture
         if spec.architecture is None:
             spec.architecture = spack.spec.ArchSpec()
-            spec_changed = True
 
-        # replace each of the fields (platform, os, target) separately
-        nearest_dict = nearest_arch.to_cmp_dict()
-        replacement_fields = [k for k, v in iteritems(nearest_dict)
-                              if v and not getattr(spec.architecture, k)]
-        for field in replacement_fields:
-            setattr(spec.architecture, field, getattr(nearest_arch, field))
-            spec_changed = True
+        if spec.architecture.platform and (spec.architecture.os and
+                                           spec.architecture.target):
+            return False
 
+        # Get platform of nearest spec with a platform, including spec
+        # If spec has a platform, easy
+        if spec.architecture.platform:
+            new_platform = spack.architecture.get_platform(
+                spec.architecture.platform)
+        else:
+            # Else if anyone else has a platform, take the closest one
+            # Search up, then down, along build/link deps first
+            # Then any nearest. Algorithm from compilerspec search
+            platform_spec  = find_spec(
+                spec, lambda x: x.architecture and x.architecture.platform
+            )
+            if platform_spec:
+                new_platform = spack.architecture.get_platform(
+                    platform_spec.architecture.platform)
+            else:
+                # If no platform anywhere in this spec, grab the default
+                new_platform = spack.architecture.platform()
+
+        # Get nearest spec with relevant platform and an os
+        # Generally, same algorithm as finding platform, except we only
+        # consider specs that have a platform
+        if spec.architecture.os:
+            new_os = spec.architecture.os
+        else:
+            new_os_spec  = find_spec(
+                spec, lambda x: (x.architecture and
+                                 x.architecture.platform == str(
+                        new_platform) and
+                                 x.architecture.os)
+            )
+            if new_os_spec:
+                new_os = new_os_spec.architecture.os
+            else:
+                new_os = new_platform.operating_system('default_os')
+
+        # Get the nearest spec with relevant platform and a target
+        # Generally, same algorithm as finding os
+        if spec.architecture.target:
+            new_target = spec.architecture.target
+        else:
+            new_target_spec = find_spec(
+                spec, lambda x: (x.architecture and
+                                 x.architecture.platform == str(
+                        new_platform) and
+                                 x.architecture.target)
+            )
+            if new_target_spec:
+                new_target = new_target_spec.architecture.target
+            else:
+                # To get default platform, consider package prefs
+                if PackagePrefs.has_preferred_targets(spec.name):
+                    target_prefs = PackagePrefs(spec.name, 'target')
+                    target_specs = [spack.spec.Spec('target=%s' % tname)
+                              for tname in cpu.supported_target_names()]
+
+                    def tspec_filter(s):
+                        # Filter target specs by whether the architecture
+                        # family is the current machine type. This ensures
+                        # we only consider x86_64 targets when on an
+                        # x86_64 machine, etc. This may need to change to
+                        # enable setting cross compiling as a default
+                        target = cpu.targets[s.architecture.target]
+                        arch_family_name = target.architecture_family.name
+                        return arch_family_name == platform.machine()
+
+                    # Sort filtered targets by package prefs
+                    target_specs = list(filter(tspec_filter, target_specs))
+                    target_specs.sort(key=target_prefs)
+
+                    new_target = target_specs[0].architecture.target
+                else:
+                    new_target = new_platform.target('default_target')
+
+        # Construct new architecture, compute whether spec changed
+        new_arch = spack.spec.ArchSpec(str(new_platform), 
+                                       str(new_os), 
+                                       str(new_target))
+        spec_changed = new_arch != spec.architecture
+        spec.architecture = new_arch
         return spec_changed
 
     def concretize_variants(self, spec):

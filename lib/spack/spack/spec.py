@@ -85,10 +85,9 @@ import itertools
 import os
 import re
 
+import six
+
 from operator import attrgetter
-from six import StringIO
-from six import string_types
-from six import iteritems
 
 from llnl.util.filesystem import find_headers, find_libraries, is_exe
 from llnl.util.lang import key_ordering, HashableMap, ObjectWrapper, dedupe
@@ -233,7 +232,7 @@ class ArchSpec(object):
             spec_like = args[0]
             if isinstance(spec_like, ArchSpec):
                 self._dup(spec_like)
-            elif isinstance(spec_like, string_types):
+            elif isinstance(spec_like, six.string_types):
                 spec_fields = spec_like.split("-")
 
                 if len(spec_fields) == 3:
@@ -354,7 +353,7 @@ class ArchSpec(object):
             raise UnsatisfiableArchitectureSpecError(self, other)
 
         constrained = False
-        for attr, svalue in iteritems(self.to_cmp_dict()):
+        for attr, svalue in six.iteritems(self.to_cmp_dict()):
             ovalue = getattr(other, attr)
             if svalue is None and ovalue is not None:
                 setattr(self, attr, ovalue)
@@ -369,7 +368,7 @@ class ArchSpec(object):
 
     @property
     def concrete(self):
-        return all(v for k, v in iteritems(self.to_cmp_dict()))
+        return all(v for k, v in six.iteritems(self.to_cmp_dict()))
 
     def to_cmp_dict(self):
         """Returns a dictionary that can be used for field comparison."""
@@ -430,7 +429,7 @@ class CompilerSpec(object):
             arg = args[0]
             # If there is one argument, it's either another CompilerSpec
             # to copy or a string to parse
-            if isinstance(arg, string_types):
+            if isinstance(arg, six.string_types):
                 c = SpecParser().parse_compiler(arg)
                 self.name = c.name
                 self.versions = c.versions
@@ -618,7 +617,7 @@ class FlagMap(HashableMap):
         return clone
 
     def _cmp_key(self):
-        return tuple((k, tuple(v)) for k, v in sorted(iteritems(self)))
+        return tuple((k, tuple(v)) for k, v in sorted(six.iteritems(self)))
 
     def __str__(self):
         sorted_keys = [k for k in sorted(self.keys()) if self[k] != []]
@@ -945,7 +944,7 @@ class Spec(object):
         self.external_module = external_module
         self._full_hash = full_hash
 
-        if isinstance(spec_like, string_types):
+        if isinstance(spec_like, six.string_types):
             spec_list = SpecParser(self).parse(spec_like)
             if len(spec_list) > 1:
                 raise ValueError("More than one spec in string: " + spec_like)
@@ -1034,7 +1033,7 @@ class Spec(object):
             new_vals = tuple(kwargs.get(arg, None) for arg in arch_attrs)
             self.architecture = ArchSpec(*new_vals)
         else:
-            new_attrvals = [(a, v) for a, v in iteritems(kwargs)
+            new_attrvals = [(a, v) for a, v in six.iteritems(kwargs)
                             if a in arch_attrs]
             for new_attr, new_value in new_attrvals:
                 if getattr(self.architecture, new_attr):
@@ -1186,7 +1185,7 @@ class Spec(object):
         # get initial values for kwargs
         depth = kwargs.get('depth', False)
         key_fun = kwargs.get('key', id)
-        if isinstance(key_fun, string_types):
+        if isinstance(key_fun, six.string_types):
             key_fun = attrgetter(key_fun)
         yield_root = kwargs.get('root', True)
         cover = kwargs.get('cover', 'nodes')
@@ -1659,7 +1658,7 @@ class Spec(object):
         formats so that reindex will work on old specs/databases.
         """
         for dep_name, elt in dependency_dict.items():
-            if isinstance(elt, string_types):
+            if isinstance(elt, six.string_types):
                 # original format, elt is just the dependency hash.
                 dag_hash, deptypes = elt, ['build', 'link']
             elif isinstance(elt, tuple):
@@ -1813,7 +1812,7 @@ class Spec(object):
             # Recurse on dependencies
             for s, s_dependencies in dep_like.items():
 
-                if isinstance(s, string_types):
+                if isinstance(s, six.string_types):
                     dag_node, dependency_types = name_and_dependency_types(s)
                 else:
                     dag_node, dependency_types = spec_and_dependency_types(s)
@@ -3283,7 +3282,7 @@ class Spec(object):
         color = kwargs.get('color', False)
         transform = kwargs.get('transform', {})
 
-        out = StringIO()
+        out = six.StringIO()
 
         def write(s, c=None):
             f = cescape(s)
@@ -3515,7 +3514,7 @@ class Spec(object):
             (k.upper(), v) for k, v in kwargs.get('transform', {}).items())
 
         length = len(format_string)
-        out = StringIO()
+        out = six.StringIO()
         named = escape = compiler = False
         named_str = fmt = ''
 

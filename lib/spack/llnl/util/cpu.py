@@ -81,6 +81,17 @@ class MicroArchitecture(object):
         return roots.pop()
 
 
+def create_generic_march(name):
+    """Returns a generic micro-architecture with no vendor and no features.
+
+    Args:
+        name (str): name of the micro-architecture
+    """
+    return MicroArchitecture(
+        name, parents=[], vendor='generic', features=[], compilers={}
+    )
+
+
 def _load_targets_from_json():
     """Loads all the known micro-architectures from JSON. If the current host
     platform is unknown adds it too as a generic target.
@@ -91,8 +102,6 @@ def _load_targets_from_json():
 
     # TODO: Simplify this logic using object_pairs_hook to OrderedDict
     # when we stop supporting python2.6
-
-    generic_values = {'from': None, 'vendor': 'generic', 'features': []}
 
     def fill_target_from_dict(name, data, targets):
         """Recursively fills targets by adding the micro-architecture
@@ -135,18 +144,21 @@ def _load_targets_from_json():
     with open(filename, 'r') as f:
         data = json.load(f)
 
-    if platform.machine() not in data:
-        data[platform.machine()] = generic_values
-
     targets = OrderedDict()
     for name in data:
         if name in targets:
             # name was already brought in as ancestor to a target
             continue
         fill_target_from_dict(name, data, targets)
+
+    # Add the host platform if not present
+    host_platform = platform.machine()
+    targets.setdefault(host_platform, create_generic_march(host_platform))
+
     return targets
 
 
+#: Dictionary of known micro-architectures
 targets = _load_targets_from_json()
 
 

@@ -58,6 +58,7 @@ will be responsible for compiler detection.
 """
 import inspect
 
+import llnl.util.cpu as cpu
 import llnl.util.tty as tty
 from llnl.util.lang import memoized, list_modules, key_ordering
 
@@ -86,19 +87,27 @@ class Target(object):
     """
 
     def __init__(self, name, module_name=None):
-        self.name = name  # case of cray "ivybridge" but if it's x86_64
+        if not isinstance(name, cpu.MicroArchitecture):
+            name = cpu.targets.get(
+                name, cpu.create_generic_march(name)
+            )
+        self.micro_architecture = name  # cray "ivybridge" but if it's x86_64
         self.module_name = module_name  # craype-ivybridge
+
+    @property
+    def name(self):
+        return self.micro_architecture.name
 
     # Sets only the platform name to avoid recursiveness
 
     def _cmp_key(self):
-        return (self.name, self.module_name)
+        return self.name, self.module_name
 
     def __repr__(self):
         return self.__str__()
 
     def __str__(self):
-        return self.name
+        return str(self.micro_architecture)
 
 
 @key_ordering
@@ -295,7 +304,7 @@ class Arch(object):
         else:
             os = self.os
         if isinstance(self.target, Target):
-            target = self.target.name
+            target = self.target.micro_architecture
         else:
             target = self.target
         return (platform, os, target)

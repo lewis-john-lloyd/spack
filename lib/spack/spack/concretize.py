@@ -25,7 +25,6 @@ import llnl.util.tty as tty
 from itertools import chain
 from functools_backport import reverse_order
 from contextlib import contextmanager
-from six import iteritems
 
 import llnl.util.lang
 import llnl.util.cpu as cpu
@@ -247,7 +246,7 @@ class Concretizer(object):
         # Get platform of nearest spec with a platform, including spec
         # If spec has a platform, easy
         if spec.architecture.platform:
-            new_platform = spack.architecture.get_platform(
+            new_plat = spack.architecture.get_platform(
                 spec.architecture.platform)
         else:
             # Else if anyone else has a platform, take the closest one
@@ -257,11 +256,11 @@ class Concretizer(object):
                 spec, lambda x: x.architecture and x.architecture.platform
             )
             if platform_spec:
-                new_platform = spack.architecture.get_platform(
+                new_plat = spack.architecture.get_platform(
                     platform_spec.architecture.platform)
             else:
                 # If no platform anywhere in this spec, grab the default
-                new_platform = spack.architecture.platform()
+                new_plat = spack.architecture.platform()
 
         # Get nearest spec with relevant platform and an os
         # Generally, same algorithm as finding platform, except we only
@@ -271,14 +270,13 @@ class Concretizer(object):
         else:
             new_os_spec  = find_spec(
                 spec, lambda x: (x.architecture and
-                                 x.architecture.platform == str(
-                        new_platform) and
+                                 x.architecture.platform == str(new_plat) and
                                  x.architecture.os)
             )
             if new_os_spec:
                 new_os = new_os_spec.architecture.os
             else:
-                new_os = new_platform.operating_system('default_os')
+                new_os = new_plat.operating_system('default_os')
 
         # Get the nearest spec with relevant platform and a target
         # Generally, same algorithm as finding os
@@ -287,8 +285,7 @@ class Concretizer(object):
         else:
             new_target_spec = find_spec(
                 spec, lambda x: (x.architecture and
-                                 x.architecture.platform == str(
-                        new_platform) and
+                                 x.architecture.platform == str(new_plat) and
                                  x.architecture.target)
             )
             if new_target_spec:
@@ -298,7 +295,7 @@ class Concretizer(object):
                 if PackagePrefs.has_preferred_targets(spec.name):
                     target_prefs = PackagePrefs(spec.name, 'target')
                     target_specs = [spack.spec.Spec('target=%s' % tname)
-                              for tname in cpu.supported_target_names()]
+                                    for tname in cpu.supported_target_names()]
 
                     def tspec_filter(s):
                         # Filter target specs by whether the architecture
@@ -316,11 +313,11 @@ class Concretizer(object):
 
                     new_target = target_specs[0].architecture.target
                 else:
-                    new_target = new_platform.target('default_target')
+                    new_target = new_plat.target('default_target')
 
         # Construct new architecture, compute whether spec changed
-        new_arch = spack.spec.ArchSpec(str(new_platform), 
-                                       str(new_os), 
+        new_arch = spack.spec.ArchSpec(str(new_plat),
+                                       str(new_os),
                                        str(new_target))
         spec_changed = new_arch != spec.architecture
         spec.architecture = new_arch

@@ -33,7 +33,7 @@ properties = {
                         'default': [],
                         # target names
                         'items': {'type': 'string'},
-                        },
+                    },
                     'compiler': {
                         'type': 'array',
                         'default': [],

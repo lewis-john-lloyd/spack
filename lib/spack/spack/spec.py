@@ -215,37 +215,38 @@ def colorize_spec(spec):
 
 @key_ordering
 class ArchSpec(object):
-    """ The ArchSpec class represents an abstract architecture specification
-        that a package should be built with.  At its core, each ArchSpec is
-        comprised of three elements: a platform (e.g. Linux), an OS (e.g.
-        RHEL6), and a target (e.g. x86_64).
-    """
+    def __init__(self, spec_or_platform_tuple=(None, None, None)):
+        """ Architecture specification a package should be built with.
 
-    # TODO: Formalize the specifications for architectures and then use
-    # the appropriate parser here to read these specifications.
-    def __init__(self, *args):
+        Each ArchSpec is comprised of three elements: a platform (e.g. Linux),
+        an OS (e.g. RHEL6), and a target (e.g. x86_64).
+
+        Args:
+            spec_or_platform_tuple (ArchSpec or str or tuple): if an ArchSpec
+                is passed it will be duplicated into the new instance.
+                Otherwise information on platform, OS and target should be
+                passed in either as a spec string or as a tuple.
+        """
+        # If another instance of ArchSpec was passed, duplicate it
+        if isinstance(spec_or_platform_tuple, ArchSpec):
+            self._dup(spec_or_platform_tuple)
+            return
+
+        # If the argument to __init__ is a spec string, parse it
+        # and construct an ArchSpec
         to_attr_string = lambda s: str(s) if s and s != "None" else None
+        if isinstance(spec_or_platform_tuple, six.string_types):
+            spec_fields = spec_or_platform_tuple.split("-")
+            msg = "invalid arch spec [{0}]"
+            assert len(spec_fields) == 3, msg.format(spec_or_platform_tuple)
+            platform_tuple = tuple(to_attr_string(f) for f in spec_fields)
 
-        self.platform, self.os, self.target = (None, None, None)
+        if isinstance(spec_or_platform_tuple, tuple):
+            platform_tuple = spec_or_platform_tuple
+            msg = "invalid arch spec tuple [{0}]"
+            assert len(platform_tuple) == 3, msg.format(platform_tuple)
 
-        if len(args) == 1:
-            spec_like = args[0]
-            if isinstance(spec_like, ArchSpec):
-                self._dup(spec_like)
-            elif isinstance(spec_like, six.string_types):
-                spec_fields = spec_like.split("-")
-
-                if len(spec_fields) == 3:
-                    self.platform, self.os, self.target = tuple(
-                        to_attr_string(f) for f in spec_fields)
-                else:
-                    raise ValueError("%s is an invalid arch spec" % spec_like)
-        elif len(args) == 3:
-            self.platform = to_attr_string(args[0])
-            self.os = to_attr_string(args[1])
-            self.target = to_attr_string(args[2])
-        elif len(args) != 0:
-            raise TypeError("Can't make arch spec from %s" % args)
+        self.platform, self.os, self.target = platform_tuple
 
     def _autospec(self, spec_like):
         if isinstance(spec_like, ArchSpec):
@@ -262,29 +263,29 @@ class ArchSpec(object):
 
     @property
     def platform(self):
+        """The platform of the architecture."""
         return self._platform
 
     @platform.setter
     def platform(self, value):
-        """ The platform of the architecture spec will be verified as a
-            supported Spack platform before it's set to ensure all specs
-            refer to valid platforms.
-        """
+        # The platform of the architecture spec will be verified as a
+        # supported Spack platform before it's set to ensure all specs
+        # refer to valid platforms.
         value = str(value) if value is not None else None
         self._platform = value
 
     @property
     def os(self):
+        """The OS of the architecture."""
         return self._os
 
     @os.setter
     def os(self, value):
-        """ The OS of the architecture spec will update the platform field
-            if the OS is set to one of the reserved OS types so that the
-            default OS type can be resolved.  Since the reserved OS
-            information is only available for the host machine, the platform
-            will assumed to be the host machine's platform.
-        """
+        # The OS of the architecture spec will update the platform field
+        # if the OS is set to one of the reserved OS types so that the
+        # default OS type can be resolved.  Since the reserved OS
+        # information is only available for the host machine, the platform
+        # will assumed to be the host machine's platform.
         value = str(value) if value is not None else None
 
         if value in spack.architecture.Platform.reserved_oss:
@@ -304,16 +305,16 @@ class ArchSpec(object):
 
     @property
     def target(self):
+        """The target of the architecture."""
         return self._target
 
     @target.setter
     def target(self, value):
-        """ The target of the architecture spec will update the platform field
-            if the target is set to one of the reserved target types so that
-            the default target type can be resolved.  Since the reserved target
-            information is only available for the host machine, the platform
-            will assumed to be the host machine's platform.
-        """
+        # The target of the architecture spec will update the platform field
+        # if the target is set to one of the reserved target types so that
+        # the default target type can be resolved.  Since the reserved target
+        # information is only available for the host machine, the platform
+        # will assumed to be the host machine's platform.
         value = str(value) if value is not None else None
 
         if value in spack.architecture.Platform.reserved_targets:
@@ -332,6 +333,17 @@ class ArchSpec(object):
         self._target = value
 
     def satisfies(self, other, strict=False):
+        """Predicate to check if this spec satisfies a constraint.
+
+        Args:
+            other (ArchSpec or str): constraint on the current instance
+            strict (bool): if ``False`` the function checks if the current
+                instance *might* eventually satisfy the constraint. If
+                ``True`` it check if the constraint is satisfied right now.
+
+        Returns:
+            True if the constraint is satisfied, False otherwise.
+        """
         other = self._autospec(other)
         sdict, odict = self.to_cmp_dict(), other.to_cmp_dict()
 
@@ -343,9 +355,17 @@ class ArchSpec(object):
                        for attr in odict if sdict[attr] and odict[attr])
 
     def constrain(self, other):
-        """ Projects all architecture fields that are specified in the given
-            spec onto the instance spec if they're missing from the instance
-            spec. This will only work if the two specs are compatible.
+        """Projects all architecture fields that are specified in the given
+        spec onto the instance spec if they're missing from the instance
+        spec.
+
+        This will only work if the two specs are compatible.
+
+        Args:
+            other (ArchSpec or str): constraints to be added
+
+        Returns:
+            True if the current instance was constrained, False otherwise.
         """
         other = self._autospec(other)
 
@@ -362,12 +382,14 @@ class ArchSpec(object):
         return constrained
 
     def copy(self):
+        """Copy the current instance and returns the clone."""
         clone = ArchSpec.__new__(ArchSpec)
         clone._dup(self)
         return clone
 
     @property
     def concrete(self):
+        """True if the spec is concrete, False otherwise"""
         return all(v for k, v in six.iteritems(self.to_cmp_dict()))
 
     def to_cmp_dict(self):
@@ -399,18 +421,21 @@ class ArchSpec(object):
 
         """
         if not isinstance(d['arch'], dict):
-            return ArchSpec('spack09', 'unknown', d['arch'])
+            return ArchSpec(('spack09', 'unknown', d['arch']))
 
         d = d['arch']
         if 'platform_os' in d:
-            return ArchSpec(d['platform'], d['platform_os'], d['target'])
+            return ArchSpec((d['platform'], d['platform_os'], d['target']))
         else:
-            return ArchSpec(d['platform'], d['os'], d['target'])
+            return ArchSpec((d['platform'], d['os'], d['target']))
 
     def __str__(self):
         return "%s-%s-%s" % (self.platform, self.os, self.target)
 
     def __repr__(self):
+        # TODO: this needs to be changed (repr is meant to return valid
+        # TODO: Python code to return an instance equivalent to the current
+        # TODO: one).
         return str(self)
 
     def __contains__(self, string):
@@ -1031,7 +1056,7 @@ class Spec(object):
 
         if not self.architecture:
             new_vals = tuple(kwargs.get(arg, None) for arg in arch_attrs)
-            self.architecture = ArchSpec(*new_vals)
+            self.architecture = ArchSpec(new_vals)
         else:
             new_attrvals = [(a, v) for a, v in six.iteritems(kwargs)
                             if a in arch_attrs]

@@ -316,9 +316,8 @@ class Concretizer(object):
                     new_target = new_plat.target('default_target')
 
         # Construct new architecture, compute whether spec changed
-        new_arch = spack.spec.ArchSpec(str(new_plat),
-                                       str(new_os),
-                                       str(new_target))
+        arch_spec = (str(new_plat), str(new_os), str(new_target))
+        new_arch = spack.spec.ArchSpec(arch_spec)
         spec_changed = new_arch != spec.architecture
         spec.architecture = new_arch
         return spec_changed

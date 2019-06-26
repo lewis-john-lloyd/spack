@@ -346,7 +346,7 @@ def verify_platform(platform_name):
 def arch_for_spec(arch_spec):
     """Transforms the given architecture spec into an architecture objct."""
     arch_spec = spack.spec.ArchSpec(arch_spec)
-    assert(arch_spec.concrete)
+    assert arch_spec.concrete
 
     arch_plat = get_platform(arch_spec.platform)
     if not (arch_plat.operating_system(arch_spec.os) and

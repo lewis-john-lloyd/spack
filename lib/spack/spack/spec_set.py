@@ -101,7 +101,8 @@ class CombinatorialSpecSet:
         the current platform are returned.
         """
         # get usable compilers for current platform.
-        arch = ArchSpec(str(sarch.platform()), 'default_os', 'default_target')
+        platform = (str(sarch.platform()), 'default_os', 'default_target')
+        arch = ArchSpec(platform)
         available_compilers = [
             c.spec for c in spack.compilers.compilers_for_arch(arch)]
 

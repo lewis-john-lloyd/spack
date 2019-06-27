@@ -58,6 +58,8 @@ will be responsible for compiler detection.
 """
 import inspect
 
+import six
+
 import llnl.util.cpu as cpu
 import llnl.util.tty as tty
 from llnl.util.lang import memoized, list_modules, key_ordering
@@ -76,7 +78,6 @@ class NoPlatformError(serr.SpackError):
             "Could not determine a platform for this machine.")
 
 
-@key_ordering
 class Target(object):
     """ Target is the processor of the host machine.
         The host machine may have different front-end and back-end targets,
@@ -100,11 +101,68 @@ class Target(object):
 
     # Sets only the platform name to avoid recursiveness
 
+    def __eq__(self, other):
+        if isinstance(other, six.string_types):
+            other = Target(other)
+
+        if not isinstance(other, Target):
+            return NotImplemented
+
+        return self.micro_architecture == other.micro_architecture and \
+            self.module_name == other.module_name
+
+    def __ne__(self, other):
+        # This method is necessary as long as we support Python 2. In Python 3
+        # __ne__ defaults to the implementation below
+        return not self == other
+
+    def __hash__(self):
+        return hash((self.name, self.module_name))
+
     def _cmp_key(self):
         return self.name, self.module_name
 
+    @staticmethod
+    def from_dict_or_value(dict_or_value):
+        # A string here represents a generic target (like x86_64 or ppc64) or
+        # a custom micro-architecture
+        if isinstance(dict_or_value, six.string_types):
+            return Target(dict_or_value)
+
+        # TODO: From a dict we actually retrieve much more information than
+        # TODO: just the name. We can use that information to reconstruct an
+        # TODO: "old" micro-architecture or check the current definition.
+        target_info = dict_or_value
+        return Target(target_info['name'])
+
+    def to_dict_or_value(self):
+        """Returns a dict or a value representing the current target.
+
+        String values are used to keep backward compatibility with generic
+        targets, like e.g. x86_64 or ppc64. More specific micro-architectures
+        will return a dictionary which contains information on the name,
+        features, vendor, generation and parents of the current target.
+        """
+        # Generic targets represent either an architecture
+        # family (like x86_64) or a custom micro-architecture
+        if self.micro_architecture.vendor == 'generic':
+            return str(self)
+
+        return syaml_dict([
+            ('name', str(self.micro_architecture.name)),
+            ('vendor', str(self.micro_architecture.vendor)),
+            ('features', sorted(
+                str(x) for x in self.micro_architecture.features
+            )),
+            ('generation', self.micro_architecture.generation),
+            ('parents', [str(x) for x in self.micro_architecture.parents])
+        ])
+
     def __repr__(self):
-        return self.__str__()
+        cls_name = self.__class__.__name__
+        fmt = cls_name + '({0}, {1})'
+        return fmt.format(repr(self.micro_architecture),
+                          repr(self.module_name))
 
     def __str__(self):
         return str(self.micro_architecture)
@@ -150,6 +208,8 @@ class Platform(object):
         front-end, and back-end. This can be overwritten
         by a subclass for which we want to provide further aliasing options.
         """
+        # TODO: Check if we can avoid using strings here
+        name = str(name)
         if name == 'default_target':
             name = self.default
         elif name == 'frontend' or name == 'fe':
@@ -314,7 +374,7 @@ class Arch(object):
         d = syaml_dict([
             ('platform', str_or_none(self.platform)),
             ('platform_os', str_or_none(self.os)),
-            ('target', str_or_none(self.target))])
+            ('target', self.target.to_dict_or_value())])
         return syaml_dict([('arch', d)])
 
     @staticmethod
@@ -344,7 +404,7 @@ def verify_platform(platform_name):
 
 
 def arch_for_spec(arch_spec):
-    """Transforms the given architecture spec into an architecture objct."""
+    """Transforms the given architecture spec into an architecture object."""
     arch_spec = spack.spec.ArchSpec(arch_spec)
     assert arch_spec.concrete
 

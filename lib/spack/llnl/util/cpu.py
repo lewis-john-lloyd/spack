@@ -41,7 +41,7 @@ class MicroArchitecture(object):
         """
         self.name = name
         self.parents = parents
-        self.ancestors = parents
+        self.ancestors = parents[:]
         for parent in parents:
             self.ancestors.extend(
                 list(filter(lambda a: a not in self.ancestors,
@@ -65,6 +65,12 @@ class MicroArchitecture(object):
                 self.ancestors == other.ancestors and
                 self.compilers == other.compilers and
                 self.generation == other.generation)
+
+    def __repr__(self):
+        cls_name = self.__class__.__name__
+        fmt = cls_name + '({0.name!r}, {0.parents!r}, {0.vendor!r}, ' \
+                         '{0.features!r}, {0.compilers!r}, {0.generation!r})'
+        return fmt.format(self)
 
     def __str__(self):
         return self.name

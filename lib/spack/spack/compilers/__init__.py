@@ -395,7 +395,7 @@ def get_compilers(config, cspec=None, arch_spec=None):
         target = items.get('target', None)
 
         try:
-            current_target = llnl.util.cpu.targets[arch_spec.target]
+            current_target = llnl.util.cpu.targets[str(arch_spec.target)]
             family = str(current_target.architecture_family)
         except KeyError:
             # TODO: Check if this exception handling makes sense, or if we

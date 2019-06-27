@@ -234,15 +234,24 @@ class ArchSpec(object):
 
         # If the argument to __init__ is a spec string, parse it
         # and construct an ArchSpec
-        to_attr_string = lambda s: str(s) if s and s != "None" else None
+        def _string_or_none(s):
+            if s and s != 'None':
+                return str(s)
+            return None
+
         if isinstance(spec_or_platform_tuple, six.string_types):
             spec_fields = spec_or_platform_tuple.split("-")
             msg = "invalid arch spec [{0}]"
             assert len(spec_fields) == 3, msg.format(spec_or_platform_tuple)
-            platform_tuple = tuple(to_attr_string(f) for f in spec_fields)
+
+            platform, operating_system, target = spec_fields
+            platform_tuple = _string_or_none(platform),\
+                _string_or_none(operating_system), target
 
         if isinstance(spec_or_platform_tuple, tuple):
-            platform_tuple = spec_or_platform_tuple
+            platform, operating_system, target = spec_or_platform_tuple
+            platform_tuple = _string_or_none(platform), \
+                _string_or_none(operating_system), target
             msg = "invalid arch spec tuple [{0}]"
             assert len(platform_tuple) == 3, msg.format(platform_tuple)
 
@@ -254,7 +263,7 @@ class ArchSpec(object):
         return ArchSpec(spec_like)
 
     def _cmp_key(self):
-        return (self.platform, self.os, self.target)
+        return self.platform, self.os, self.target
 
     def _dup(self, other):
         self.platform = other.platform
@@ -315,9 +324,17 @@ class ArchSpec(object):
         # the default target type can be resolved.  Since the reserved target
         # information is only available for the host machine, the platform
         # will assumed to be the host machine's platform.
-        value = str(value) if value is not None else None
 
-        if value in spack.architecture.Platform.reserved_targets:
+        def target_or_none(t):
+            if isinstance(t, spack.architecture.Target):
+                return t
+            if t and t != 'None':
+                return spack.architecture.Target(t)
+            return None
+
+        value = target_or_none(value)
+
+        if str(value) in spack.architecture.Platform.reserved_targets:
             curr_platform = str(spack.architecture.platform())
             self.platform = self.platform or curr_platform
 
@@ -403,7 +420,7 @@ class ArchSpec(object):
         d = syaml_dict([
             ('platform', self.platform),
             ('platform_os', self.os),
-            ('target', self.target)])
+            ('target', self.target.to_dict_or_value())])
         return syaml_dict([('arch', d)])
 
     @staticmethod
@@ -424,10 +441,11 @@ class ArchSpec(object):
             return ArchSpec(('spack09', 'unknown', d['arch']))
 
         d = d['arch']
-        if 'platform_os' in d:
-            return ArchSpec((d['platform'], d['platform_os'], d['target']))
-        else:
-            return ArchSpec((d['platform'], d['os'], d['target']))
+
+        operating_system = d.get('platform_os', None) or d['os']
+        target = spack.architecture.Target.from_dict_or_value(d['target'])
+
+        return ArchSpec((d['platform'], operating_system, target))
 
     def __str__(self):
         return "%s-%s-%s" % (self.platform, self.os, self.target)

@@ -264,7 +264,7 @@
       "xsaves"
     ]
   },
-  "skylake-avx512": {
+  "skylake_avx512": {
     "from": "skylake",
     "features": [
       "mmx",
@@ -298,6 +298,7 @@
     ],
     "compilers": {
       "gcc": {
+        "name": "skylake-avx512",
         "versions": "5.3:"
       }
     }
@@ -344,7 +345,7 @@
     }
   },
   "cascadelake": {
-    "from": "skylake-avx512",
+    "from": "skylake_avx512",
     "features": [
       "mmx",
       "sse",

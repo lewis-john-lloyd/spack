@@ -345,7 +345,7 @@ class ArchSpec(object):
                     (value, self.platform, curr_platform))
 
             spec_platform = spack.architecture.get_platform(self.platform)
-            value = str(spec_platform.target(value))
+            value = spec_platform.target(value)
 
         self._target = value
 
@@ -2231,6 +2231,10 @@ class Spec(object):
                             matches.append((x, conflict_spec, when, msg))
         if matches:
             raise ConflictsInSpecError(self, matches)
+
+        # Check if we can produce an optimized binary (will throw if
+        # there are declared inconsistencies)
+        self.architecture.target.isa_target_for(self.compiler)
 
     def _mark_concrete(self, value=True):
         """Mark this spec and its dependencies as concrete.

@@ -201,7 +201,7 @@ def set_compiler_environment_variables(pkg, env):
     env.set('SPACK_FC_RPATH_ARG',  compiler.fc_rpath_arg)
 
     # Set the target parameters that the compiler will add
-    isa_target = compiler.isa_name_for_target(spec.architecture.target)
+    isa_target = spec.architecture.target.isa_target_for(compiler)
     if compiler.isa_flag and isa_target:
         isa_arg = '{0}={1}'.format(compiler.isa_flag, isa_target)
     else:

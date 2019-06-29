@@ -56,6 +56,12 @@ set. The user can set the front-end and back-end operating setting by the class
 attributes front_os and back_os. The operating system as described earlier,
 will be responsible for compiler detection.
 """
+try:
+    from collections.abc import Sequence
+except ImportError:
+    from collections import Sequence
+
+import functools
 import inspect
 
 import six
@@ -67,15 +73,19 @@ from llnl.util.lang import memoized, list_modules, key_ordering
 import spack.compiler
 import spack.paths
 import spack.error as serr
+import spack.version
 from spack.util.naming import mod_to_class
 from spack.util.spack_yaml import syaml_dict
 
 
 class NoPlatformError(serr.SpackError):
-
     def __init__(self):
         super(NoPlatformError, self).__init__(
             "Could not determine a platform for this machine.")
+
+
+class UnsupportedMicroArchitecture(serr.SpackError, ValueError):
+    pass
 
 
 class Target(object):
@@ -86,6 +96,19 @@ class Target(object):
         recognize which platform they came from using the set_platform method.
         Targets will have compiler finding strategies
     """
+    @staticmethod
+    def ensure_other_is_target(method):
+        @functools.wraps(method)
+        def _impl(self, other):
+            if isinstance(other, six.string_types):
+                other = Target(other)
+
+            if not isinstance(other, Target):
+                return NotImplemented
+
+            return method(self, other)
+
+        return _impl
 
     def __init__(self, name, module_name=None):
         if not isinstance(name, cpu.MicroArchitecture):
@@ -102,11 +125,8 @@ class Target(object):
     # Sets only the platform name to avoid recursiveness
 
     def __eq__(self, other):
-        if isinstance(other, six.string_types):
-            other = Target(other)
-
         if not isinstance(other, Target):
-            return NotImplemented
+            return False
 
         return self.micro_architecture == other.micro_architecture and \
             self.module_name == other.module_name
@@ -115,6 +135,11 @@ class Target(object):
         # This method is necessary as long as we support Python 2. In Python 3
         # __ne__ defaults to the implementation below
         return not self == other
+
+    def __lt__(self, other):
+        # This is needed to sort specs in a list. It doesn't implement
+        # total ordering.
+        return self.micro_architecture.name < other.micro_architecture.name
 
     def __hash__(self):
         return hash((self.name, self.module_name))
@@ -157,6 +182,43 @@ class Target(object):
             ('generation', self.micro_architecture.generation),
             ('parents', [str(x) for x in self.micro_architecture.parents])
         ])
+
+    def isa_target_for(self, compiler):
+        """Returns the name to be used to optimize for the current target
+        using the compiler passed as argument, or None if the information
+        is not available.
+
+        Args:
+            compiler: object with a ``name`` and ``version`` attribute for
+                the compiler being used.
+
+        Raises:
+            UnsupportedMicroArchitecture: if the compiler version passed as
+                argument doesn't support the current micro-architecture.
+        """
+        # No information available on compiler: return None
+        if compiler.name not in self.micro_architecture.compilers:
+            return None
+
+        # Get the information on supported compiler versions
+        constraints = self.micro_architecture.compilers[compiler.name]
+        if not isinstance(constraints, Sequence):
+            constraints = [constraints]
+
+        for constraint in constraints:
+            version_request = spack.version.ver(constraint['versions'])
+            if compiler.version.satisfies(version_request):
+                # The name to be used defaults to the micro-architecture name,
+                # but can be overridden by compiler info in the JSON file
+                name = constraint.get('name', None) or self.name
+                return name
+
+        msg = 'cannot produce optimized binary for micro-architecture "{0}"' \
+            ' with {1.name}@{1.version!s} ' \
+            '[supported compiler versions are {2}]'
+        msg = msg.format(self.micro_architecture.name, compiler,
+                         ', '.join([x['versions'] for x in constraints]))
+        raise UnsupportedMicroArchitecture(msg)
 
     def __repr__(self):
         cls_name = self.__class__.__name__

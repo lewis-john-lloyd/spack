@@ -396,12 +396,6 @@ class Compiler(object):
     def fc_version(cls, fc):
         return cls.default_version(fc)
 
-    def isa_name_for_target(self, target):
-        return str(target)
-
-    def tuning_name_for_target(self, target):
-        return str(target)
-
     @classmethod
     def search_regexps(cls, language):
         # Compile all the regular expressions used for files beforehand.

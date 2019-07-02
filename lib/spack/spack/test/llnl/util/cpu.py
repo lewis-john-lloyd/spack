@@ -17,7 +17,8 @@ import spack.paths
     'linux-rhel7-broadwell',
     'linux-rhel7-skylake_avx512',
     'linux-rhel7-ivybridge',
-    'linux-rhel7-haswell'
+    'linux-rhel7-haswell',
+    'linux-rhel7-zen'
 ])
 def expected_target(request, monkeypatch):
     platform, operating_system, target = request.param.split('-')

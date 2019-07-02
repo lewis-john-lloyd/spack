@@ -15,7 +15,9 @@ import spack.paths
 @pytest.fixture(params=[
     'linux-ubuntu18.04-broadwell',
     'linux-rhel7-broadwell',
-    'linux-rhel7-skylake_avx512'
+    'linux-rhel7-skylake_avx512',
+    'linux-rhel7-ivybridge',
+    'linux-rhel7-haswell'
 ])
 def expected_target(request, monkeypatch):
     platform, operating_system, target = request.param.split('-')

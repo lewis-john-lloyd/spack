@@ -261,7 +261,7 @@
       "adx",
       "clflushopt",
       "xsavec",
-      "xsaves"
+      "xsaveopt"
     ]
   },
   "skylake_avx512": {
@@ -288,7 +288,7 @@
       "adx",
       "clflushopt",
       "xsavec",
-      "xsaves",
+      "xsaveopt",
       "avx512f",
       "clwb",
       "avx512vl",
@@ -327,7 +327,7 @@
       "adx",
       "clflushopt",
       "xsavec",
-      "xsaves",
+      "xsaveopt",
       "avx512f",
       "avx512vl",
       "avx512bw",
@@ -368,7 +368,7 @@
       "adx",
       "clflushopt",
       "xsavec",
-      "xsaves",
+      "xsaveopt",
       "avx512f",
       "clwb",
       "avx512vl",
@@ -410,7 +410,7 @@
       "adx",
       "clflushopt",
       "xsavec",
-      "xsaves",
+      "xsaveopt",
       "avx512f",
       "avx512vl",
       "avx512bw",
@@ -603,7 +603,7 @@
       "sse4_2",
       "abm",
       "xsavec",
-      "xsaves",
+      "xsaveopt",
       "clflushopt",
       "popcnt"
     ],
@@ -643,7 +643,7 @@
       "sse4_2",
       "abm",
       "xsavec",
-      "xsaves",
+      "xsaveopt",
       "clflushopt",
       "popcnt",
       "clwb"

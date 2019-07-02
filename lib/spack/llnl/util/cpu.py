@@ -107,7 +107,7 @@ def _load_targets_from_json():
     """
 
     # TODO: Simplify this logic using object_pairs_hook to OrderedDict
-    # when we stop supporting python2.6
+    # TODO: when we stop supporting python2.6
 
     def fill_target_from_dict(name, data, targets):
         """Recursively fills targets by adding the micro-architecture
@@ -246,8 +246,7 @@ def detect_host():
     elif basename in ('ppc64', 'ppc64le'):
         tester = _get_power_target_tester(cpuinfo, basename)
     else:
-        # FIXME: this should return a MicroArchitecture instance
-        return basename
+        return create_generic_march(basename)
 
     # Reverse sort of the depth for the inheritance tree among only targets we
     # can use. This gets the newest target we satisfy.

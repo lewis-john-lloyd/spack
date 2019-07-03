@@ -103,6 +103,10 @@ class MicroArchitecture(object):
     def __str__(self):
         return self.name
 
+    def __contains__(self, feature):
+        # The semantic here looks for the exact feature name
+        return feature in self.features
+
     @property
     def architecture_family(self):
         """Returns the architecture family a given target belongs to"""

@@ -111,3 +111,21 @@ def test_partial_ordering(target, operation, other_target):
 def test_architecture_family(target_name, expected_family):
     target = llnl.util.cpu.targets[target_name]
     assert str(target.architecture_family) == expected_family
+
+
+@pytest.mark.parametrize('target_name,feature', [
+    ('skylake', 'avx2'),
+    ('icelake', 'avx512f')
+])
+def test_features_query(target_name, feature):
+    target = llnl.util.cpu.targets[target_name]
+    assert feature in target
+
+
+def test_create_generic_march():
+    generic_march = llnl.util.cpu.create_generic_march('foo')
+
+    assert generic_march.name == 'foo'
+    assert not generic_march.features
+    assert not generic_march.ancestors
+    assert generic_march.vendor == 'generic'

@@ -11,6 +11,9 @@ import os.path
 import llnl.util.cpu
 import spack.paths
 
+# This is needed to check that with repr we could create equivalent objects
+from llnl.util.cpu import MicroArchitecture  # noqa
+
 
 @pytest.fixture(params=[
     'linux-ubuntu18.04-broadwell',
@@ -54,3 +57,12 @@ def test_target_detection(expected_target):
 
 def test_no_dashes_in_target_names(supported_target):
     assert '-' not in supported_target
+
+
+def test_str_conversion(supported_target):
+    assert supported_target == str(llnl.util.cpu.targets[supported_target])
+
+
+def test_repr_conversion(supported_target):
+    target = llnl.util.cpu.targets[supported_target]
+    assert eval(repr(target)) == target

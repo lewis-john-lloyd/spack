@@ -7,6 +7,7 @@ import pytest
 
 import contextlib
 import os.path
+import sys
 
 import llnl.util.cpu
 import spack.paths
@@ -85,7 +86,13 @@ def test_equality(supported_target):
     (llnl.util.cpu.targets['bulldozer'],
      llnl.util.cpu.targets['skylake'],
      ValueError),
-    (llnl.util.cpu.targets['x86_64'], 'foo', TypeError)
+    pytest.param(
+        llnl.util.cpu.targets['x86_64'], 'foo', TypeError,
+        marks=pytest.mark.xfail(
+            sys.version_info < (3, 0),
+            reason="Unorderable types comparison doesn't raise in Python 2"
+        )
+    ),
 ])
 def test_partial_ordering_failures(target, other_target, err_cls):
     with pytest.raises(err_cls):

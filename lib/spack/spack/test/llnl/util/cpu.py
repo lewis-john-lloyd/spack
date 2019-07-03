@@ -66,3 +66,38 @@ def test_str_conversion(supported_target):
 def test_repr_conversion(supported_target):
     target = llnl.util.cpu.targets[supported_target]
     assert eval(repr(target)) == target
+
+
+def test_equality(supported_target):
+    target = llnl.util.cpu.targets[supported_target]
+
+    for name, other_target in llnl.util.cpu.targets.items():
+        if name == supported_target:
+            assert other_target == target
+        else:
+            assert other_target != target
+
+
+@pytest.mark.parametrize('target,other_target,err_cls', [
+    (llnl.util.cpu.targets['x86'],
+     llnl.util.cpu.targets['skylake'],
+     ValueError),
+    (llnl.util.cpu.targets['bulldozer'],
+     llnl.util.cpu.targets['skylake'],
+     ValueError),
+    (llnl.util.cpu.targets['x86_64'], 'foo', TypeError)
+])
+def test_partial_ordering_failures(target, other_target, err_cls):
+    with pytest.raises(err_cls):
+        target < other_target
+
+
+@pytest.mark.parametrize('target,operation,other_target', [
+    (llnl.util.cpu.targets['x86_64'], '<', llnl.util.cpu.targets['skylake']),
+    (llnl.util.cpu.targets['icelake'], '>', llnl.util.cpu.targets['skylake']),
+    (llnl.util.cpu.targets['piledriver'], '<=', llnl.util.cpu.targets['zen']),
+    (llnl.util.cpu.targets['zen2'], '>=', llnl.util.cpu.targets['zen'])
+])
+def test_partial_ordering(target, operation, other_target):
+    code = 'target' + operation + 'other_target'
+    assert eval(code)

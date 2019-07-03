@@ -56,15 +56,43 @@ class MicroArchitecture(object):
         if not (self in other.ancestors or other in self.ancestors):
             msg = "There is no ordering relationship between targets "
             msg += "%s and %s." % (self.name, other.name)
-            raise TypeError(msg)
+            raise ValueError(msg)
 
     def __eq__(self, other):
+        if not isinstance(other, MicroArchitecture):
+            return NotImplemented
+
         return (self.name == other.name and
                 self.vendor == other.vendor and
                 self.features == other.features and
                 self.ancestors == other.ancestors and
                 self.compilers == other.compilers and
                 self.generation == other.generation)
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __lt__(self, other):
+        if not isinstance(other, MicroArchitecture):
+            return NotImplemented
+
+        self._ensure_strictly_orderable(other)
+
+        # If the current micro-architecture is in the list of ancestors
+        # of the other micro-architecture, then it's less than the other
+        if self in other.ancestors:
+            return True
+
+        return False
+
+    def __le__(self, other):
+        return (self == other) or (self < other)
+
+    def __gt__(self, other):
+        return not (self <= other)
+
+    def __ge__(self, other):
+        return not (self < other)
 
     def __repr__(self):
         cls_name = self.__class__.__name__

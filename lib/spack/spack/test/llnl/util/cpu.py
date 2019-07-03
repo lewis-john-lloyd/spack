@@ -42,6 +42,15 @@ def expected_target(request, monkeypatch):
     return llnl.util.cpu.targets[target]
 
 
+@pytest.fixture(params=[x for x in llnl.util.cpu.targets])
+def supported_target(request):
+    return request.param
+
+
 def test_target_detection(expected_target):
     detected_target = llnl.util.cpu.detect_host()
     assert detected_target == expected_target
+
+
+def test_no_dashes_in_target_names(supported_target):
+    assert '-' not in supported_target

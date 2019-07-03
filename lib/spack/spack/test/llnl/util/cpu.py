@@ -101,3 +101,13 @@ def test_partial_ordering_failures(target, other_target, err_cls):
 def test_partial_ordering(target, operation, other_target):
     code = 'target' + operation + 'other_target'
     assert eval(code)
+
+
+@pytest.mark.parametrize('target_name,expected_family', [
+    ('skylake', 'x86_64'),
+    ('zen', 'x86_64'),
+    ('pentium2', 'x86'),
+])
+def test_architecture_family(target_name, expected_family):
+    target = llnl.util.cpu.targets[target_name]
+    assert str(target.architecture_family) == expected_family

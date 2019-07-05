@@ -88,29 +88,31 @@ class UnsupportedMicroArchitecture(serr.SpackError, ValueError):
     pass
 
 
+def _ensure_other_is_target(method):
+    @functools.wraps(method)
+    def _impl(self, other):
+        if isinstance(other, six.string_types):
+            other = Target(other)
+
+        if not isinstance(other, Target):
+            return NotImplemented
+
+        return method(self, other)
+
+    return _impl
+
+
 class Target(object):
-    """ Target is the processor of the host machine.
-        The host machine may have different front-end and back-end targets,
-        especially if it is a Cray machine. The target will have a name and
-        also the module_name (e.g craype-compiler). Targets will also
-        recognize which platform they came from using the set_platform method.
-        Targets will have compiler finding strategies
-    """
-    @staticmethod
-    def ensure_other_is_target(method):
-        @functools.wraps(method)
-        def _impl(self, other):
-            if isinstance(other, six.string_types):
-                other = Target(other)
-
-            if not isinstance(other, Target):
-                return NotImplemented
-
-            return method(self, other)
-
-        return _impl
-
     def __init__(self, name, module_name=None):
+        """Target models the processor of the current architecture.
+
+        Args:
+            name (str or MicroArchitecture):micro-architecture of the
+                target
+            module_name (str): optional module name to get access to the
+                current target. This is typically used on top-tier machines
+                like Cray (e.g. craype-compiler)
+        """
         if not isinstance(name, cpu.MicroArchitecture):
             name = cpu.targets.get(
                 name, cpu.create_generic_march(name)
@@ -122,12 +124,8 @@ class Target(object):
     def name(self):
         return self.micro_architecture.name
 
-    # Sets only the platform name to avoid recursiveness
-
+    @_ensure_other_is_target
     def __eq__(self, other):
-        if not isinstance(other, Target):
-            return False
-
         return self.micro_architecture == other.micro_architecture and \
             self.module_name == other.module_name
 
@@ -136,16 +134,14 @@ class Target(object):
         # __ne__ defaults to the implementation below
         return not self == other
 
+    @_ensure_other_is_target
     def __lt__(self, other):
-        # This is needed to sort specs in a list. It doesn't implement
-        # total ordering.
+        # This is needed to sort deterministically specs in a list.
+        # It doesn't implement a total ordering semantic.
         return self.micro_architecture.name < other.micro_architecture.name
 
     def __hash__(self):
         return hash((self.name, self.module_name))
-
-    def _cmp_key(self):
-        return self.name, self.module_name
 
     @staticmethod
     def from_dict_or_value(dict_or_value):

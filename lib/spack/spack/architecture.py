@@ -225,6 +225,29 @@ class Target(object):
     def __str__(self):
         return str(self.micro_architecture)
 
+    def __contains__(self, cpu_flag):
+
+        def sse3_proxy():
+            return any(
+                x in self.micro_architecture for x in ('sse3', 'ssse3')
+            )
+
+        def avx512_proxy():
+            avx512_flags = [
+                'avx512f', 'avx512vl', 'avx512bw', 'avx512dq', 'avx512cd',
+            ]
+            return any(x in self.micro_architecture for x in avx512_flags)
+
+        proxy_flags = {
+            'sse3': sse3_proxy,
+            'avx512': avx512_proxy
+        }
+
+        get_result = proxy_flags.get(
+            cpu_flag, lambda: cpu_flag in self.micro_architecture
+        )
+        return get_result()
+
 
 @key_ordering
 class Platform(object):

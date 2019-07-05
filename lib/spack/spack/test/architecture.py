@@ -140,3 +140,19 @@ def test_operating_system_conversion_to_dict():
     assert operating_system.to_dict() == {
         'name': 'os', 'version': '1.0'
     }
+
+
+@pytest.mark.parametrize('cpu_flag,target_name', [
+    # Test that specific flags can be used in queries
+    ('ssse3', 'haswell'),
+    ('popcnt', 'nehalem'),
+    ('avx512f', 'skylake_avx512'),
+    ('avx512ifma', 'icelake'),
+    # Test that proxy flags can be used in queries too
+    ('sse3', 'nehalem'),
+    ('avx512', 'skylake_avx512'),
+    ('avx512', 'icelake'),
+])
+def test_target_container_semantic(cpu_flag, target_name):
+    target = spack.architecture.Target(target_name)
+    assert cpu_flag in target

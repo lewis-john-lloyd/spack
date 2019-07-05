@@ -457,7 +457,7 @@ class ArchSpec(object):
         return str(self)
 
     def __contains__(self, string):
-        return string in str(self)
+        return string in str(self) or string in self.target
 
 
 @key_ordering

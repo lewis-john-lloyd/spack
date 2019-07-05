@@ -156,3 +156,16 @@ def test_operating_system_conversion_to_dict():
 def test_target_container_semantic(cpu_flag, target_name):
     target = spack.architecture.Target(target_name)
     assert cpu_flag in target
+
+
+@pytest.mark.parametrize('item,architecture_str', [
+    # We can search the architecture string representation
+    ('linux', 'linux-ubuntu18.04-haswell'),
+    ('ubuntu', 'linux-ubuntu18.04-haswell'),
+    ('haswell', 'linux-ubuntu18.04-haswell'),
+    # We can also search flags f the target,
+    ('avx512', 'linux-ubuntu18.04-icelake'),
+])
+def test_arch_spec_container_semantic(item, architecture_str):
+    architecture = spack.spec.ArchSpec(architecture_str)
+    assert item in architecture

@@ -287,9 +287,8 @@ def detect_host():
 
 def _get_power_target_tester(cpuinfo, basename):
     """Returns a tester function for the Power architecture."""
-    generation = int(
-        re.search(r'POWER(\d+)', cpuinfo.get('cpu', '')).matches(1)
-    )
+    generation_match = re.search(r'POWER(\d+)', cpuinfo.get('cpu', ''))
+    generation = int(generation_match.group(1))
 
     def can_use(target):
         # We can use a target if it descends from our machine type and our

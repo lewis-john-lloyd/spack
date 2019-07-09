@@ -22,10 +22,16 @@ from llnl.util.cpu import MicroArchitecture  # noqa
     'linux-rhel7-skylake_avx512',
     'linux-rhel7-ivybridge',
     'linux-rhel7-haswell',
-    'linux-rhel7-zen'
+    'linux-rhel7-zen',
+    'linux-centos7-power8'
 ])
 def expected_target(request, monkeypatch):
     platform, operating_system, target = request.param.split('-')
+
+    architecture_family = llnl.util.cpu.targets[target].architecture_family
+    monkeypatch.setattr(
+        llnl.util.cpu.platform, 'machine', lambda: str(architecture_family)
+    )
 
     # Monkeypatch for linux
     if platform == 'linux':

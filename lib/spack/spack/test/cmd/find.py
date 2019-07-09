@@ -294,3 +294,10 @@ def test_find_no_sections(database, config):
     output = find("--no-groups")
     assert "-----------" not in output
     assert "==>" not in output
+
+
+@pytest.mark.db
+@pytest.mark.usefixtures('database')
+def test_find_command_basic_usage():
+    output = find()
+    assert 'mpileaks' in output

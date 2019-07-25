@@ -52,16 +52,17 @@ class MicroArchitecture(object):
         """
         self.name = name
         self.parents = parents
-        self.ancestors = parents[:]
-        for parent in parents:
-            self.ancestors.extend(
-                list(filter(lambda a: a not in self.ancestors,
-                            parent.ancestors))
-            )
         self.vendor = vendor
         self.features = features
         self.compilers = compilers
         self.generation = generation
+
+    @property
+    def ancestors(self):
+        value = self.parents[:]
+        for parent in self.parents:
+            value.extend(a for a in parent.ancestors if a not in value)
+        return value
 
     def _ensure_strictly_orderable(self, other):
         if not (self in other.ancestors or other in self.ancestors):

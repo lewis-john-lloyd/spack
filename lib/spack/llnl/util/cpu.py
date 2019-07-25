@@ -23,10 +23,12 @@ class MicroArchitecture(object):
 
         Args:
             name (str): name of the micro-architecture (e.g. skylake).
-            parents (list): list of parents micro-architectures (by features),
-                if any. For example, "skylake" will have "broadwell" as a
-                parent while "icelake" will have both "cascadelake" and
-                "cannonlake".
+            parents (list): list of parents micro-architectures, if any.
+                Parenthood is considered by cpu features and not
+                chronologically. As such each micro-architecture is
+                compatible with its ancestors. For example "skylake",
+                which has "broadwell" as a parent, supports running binaries
+                optimized for "broadwell".
             vendor (str): vendor of the micro-architecture
             features (list of str): supported CPU flags. Note that the semantic
                 of the flags in this field might vary among architectures, if
@@ -35,7 +37,16 @@ class MicroArchitecture(object):
                 list instead only the flags that have been added on top of the
                 base model for the current micro-architecture.
             compilers (dict): compiler support to generate tuned code for this
-                micro-architecture.
+                micro-architecture. This dictionary has as keys names of
+                supported compilers, while values are list of dictionaries
+                with fields:
+
+                * name: name of the micro-architecture according to the
+                    compiler. This is the name passed to the ``-march`` option
+                    or similar. Not needed if the name is the same as that
+                    passed in as argument above.
+                * versions: versions that support this micro-architecture.
+
             generation (int): generation of the micro-architecture, if
                 relevant.
         """

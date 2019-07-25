@@ -141,7 +141,7 @@ def create_generic_march(name):
     )
 
 
-def _load_targets_from_json():
+def _load_microarchitectures_from_json():
     """Loads all the known micro-architectures from JSON. If the current host
     platform is unknown adds it too as a generic target.
 
@@ -208,7 +208,7 @@ def _load_targets_from_json():
 
 
 #: Dictionary of known micro-architectures
-targets = _load_targets_from_json()
+targets = _load_microarchitectures_from_json()
 
 
 def supported_target_names():

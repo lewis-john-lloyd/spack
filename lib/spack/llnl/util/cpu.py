@@ -170,8 +170,10 @@ def _load_microarchitectures_from_json():
             parents = [parents]
         if parents is None:
             parents = []
-        for p in filter(lambda x: x not in targets, parents):
+        for p in parents:
             # Recursively fill parents so they exist before we add them
+            if p in targets:
+                continue
             fill_target_from_dict(p, data, targets)
         parents = [targets.get(p) for p in parents]
 

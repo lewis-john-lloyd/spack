@@ -135,8 +135,8 @@ def test_features_query(target_name, feature):
     assert feature in target
 
 
-def test_create_generic_march():
-    generic_march = llnl.util.cpu.create_generic_march('foo')
+def test_generic_microarchitecture():
+    generic_march = llnl.util.cpu.generic_microarchitecture('foo')
 
     assert generic_march.name == 'foo'
     assert not generic_march.features

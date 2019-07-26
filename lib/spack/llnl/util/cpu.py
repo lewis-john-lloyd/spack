@@ -130,7 +130,7 @@ class MicroArchitecture(object):
         return roots.pop()
 
 
-def create_generic_march(name):
+def generic_microarchitecture(name):
     """Returns a generic micro-architecture with no vendor and no features.
 
     Args:
@@ -202,7 +202,7 @@ def _load_microarchitectures_from_json():
 
     # Add the host platform if not present
     host_platform = platform.machine()
-    targets.setdefault(host_platform, create_generic_march(host_platform))
+    targets.setdefault(host_platform, generic_microarchitecture(host_platform))
 
     return targets
 
@@ -289,7 +289,7 @@ def detect_host():
     elif basename in ('ppc64', 'ppc64le'):
         tester = _get_power_target_tester(cpuinfo, basename)
     else:
-        return create_generic_march(basename)
+        return generic_microarchitecture(basename)
 
     # Reverse sort of the depth for the inheritance tree among only targets we
     # can use. This gets the newest target we satisfy.

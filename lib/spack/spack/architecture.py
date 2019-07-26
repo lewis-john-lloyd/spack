@@ -115,7 +115,7 @@ class Target(object):
         """
         if not isinstance(name, cpu.MicroArchitecture):
             name = cpu.targets.get(
-                name, cpu.create_generic_march(name)
+                name, cpu.generic_microarchitecture(name)
             )
         self.micro_architecture = name  # cray "ivybridge" but if it's x86_64
         self.module_name = module_name  # craype-ivybridge

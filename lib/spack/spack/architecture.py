@@ -113,8 +113,8 @@ class Target(object):
             name = cpu.targets.get(
                 name, cpu.generic_microarchitecture(name)
             )
-        self.micro_architecture = name  # cray "ivybridge" but if it's x86_64
-        self.module_name = module_name  # craype-ivybridge
+        self.micro_architecture = name
+        self.module_name = module_name
 
     @property
     def name(self):

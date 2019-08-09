@@ -84,10 +84,6 @@ class NoPlatformError(serr.SpackError):
             "Could not determine a platform for this machine.")
 
 
-class UnsupportedMicroArchitecture(serr.SpackError, ValueError):
-    pass
-
-
 def _ensure_other_is_target(method):
     @functools.wraps(method)
     def _impl(self, other):
@@ -553,3 +549,7 @@ def sys_type():
     """
     arch = Arch(platform(), 'default_os', 'default_target')
     return str(arch)
+
+
+class UnsupportedMicroArchitecture(serr.SpackError, ValueError):
+    pass

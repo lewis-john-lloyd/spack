@@ -231,8 +231,7 @@ def _create_dict_from_proc():
     cpuinfo = {}
     try:
         with open('/proc/cpuinfo') as file:
-            text = file.readlines()
-            for line in text:
+            for line in file:
                 if line.strip():
                     key, _, value = line.partition(':')
                     cpuinfo[key.strip()] = value.strip()

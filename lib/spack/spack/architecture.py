@@ -106,7 +106,7 @@ class Target(object):
             name (str or MicroArchitecture):micro-architecture of the
                 target
             module_name (str): optional module name to get access to the
-                current target. This is typically used on top-tier machines
+                current target. This is typically used on machines
                 like Cray (e.g. craype-compiler)
         """
         if not isinstance(name, cpu.MicroArchitecture):

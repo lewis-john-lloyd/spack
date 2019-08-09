@@ -165,17 +165,17 @@ def _load_microarchitectures_from_json():
         values = data[name]
 
         # Get direct parents of target
-        parents = values['from']
-        if isinstance(parents, six.string_types):
-            parents = [parents]
-        if parents is None:
-            parents = []
-        for p in parents:
+        parent_names = values['from']
+        if isinstance(parent_names, six.string_types):
+            parent_names = [parent_names]
+        if parent_names is None:
+            parent_names = []
+        for p in parent_names:
             # Recursively fill parents so they exist before we add them
             if p in targets:
                 continue
             fill_target_from_dict(p, data, targets)
-        parents = [targets.get(p) for p in parents]
+        parents = [targets.get(p) for p in parent_names]
 
         # Get target vendor
         vendor = values.get('vendor', None)

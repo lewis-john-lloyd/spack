@@ -193,7 +193,7 @@ def _load_microarchitectures_from_json():
     this_dir = os.path.dirname(os.path.abspath(__file__))
     filename = os.path.join(this_dir, 'targets.json')
     with open(filename, 'r') as f:
-        data = json.load(f)
+        data = json.load(f)['micro_architectures']
 
     targets = OrderedDict()
     for name in data:

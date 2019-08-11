@@ -10,12 +10,130 @@ import re
 import subprocess
 import sys
 
+try:
+    from collections.abc import MutableMapping
+except ImportError:
+    from collections import MutableMapping
+
 import six
 
-from ordereddict_backport import OrderedDict
+
+class LazyDictionary(MutableMapping):
+    """Lazy dictionary that gets constructed on first access to any object key
+
+    Args:
+        factory (callable): factory function to construct the dictionary
+    """
+    def __init__(self, factory, *args, **kwargs):
+        self.factory = factory
+        self.args = args
+        self.kwargs = kwargs
+        self._data = None
+
+    @property
+    def data(self):
+        if self._data is None:
+            self._data = self.factory(*self.args, **self.kwargs)
+        return self._data
+
+    def __getitem__(self, key):
+        return self.data[key]
+
+    def __setitem__(self, key, value):
+        self.data[key] = value
+
+    def __delitem__(self, key):
+        del self.data[key]
+
+    def __iter__(self):
+        return iter(self.data)
+
+    def __len__(self):
+        return len(self.data)
+
+
+def _load_targets_json():
+    """Loads ``targets.json`` in memory."""
+    directory_name = os.path.dirname(os.path.abspath(__file__))
+    filename = os.path.join(directory_name, 'targets.json')
+    with open(filename, 'r') as f:
+        return json.load(f)
+
+
+#: In memory representation of the data in targets.json, loaded on first access
+_targets_json = LazyDictionary(_load_targets_json)
+
+#: Known predicates that can be used to construct feature aliases
+_feature_alias_predicate = {}
+
+
+class FeatureAliasTest(object):
+    """A test that must be passed for a feature alias to succeed.
+
+    Args:
+        rules (dict): dictionary of rules to be met. Each key must be a
+            valid alias predicate
+    """
+    def __init__(self, rules):
+        self.rules = rules
+        self.predicates = []
+        for name, args in rules.items():
+            self.predicates.append(_feature_alias_predicate[name](args))
+
+    def __call__(self, microarchitecture):
+        return all(
+            feature_test(microarchitecture) for feature_test in self.predicates
+        )
+
+
+def _feature_aliases():
+    """Returns the dictionary of all defined feature aliases."""
+    json_data = _targets_json['feature_aliases']
+    aliases = {}
+    for alias, rules in json_data.items():
+        aliases[alias] = FeatureAliasTest(rules)
+    return aliases
+
+
+def alias_predicate(func):
+    """Decorator to register a predicate that can be used to define
+    feature aliases.
+    """
+    name = func.__name__
+    if name in _feature_alias_predicate:
+        msg = 'the feature alias predicate "{0}" already exists'.format(name)
+        raise KeyError(msg)
+
+    # TODO: This must update the schema when we'll add it
+    _feature_alias_predicate[name] = func
+
+    return func
+
+
+@alias_predicate
+def any_of(list_of_features):
+    """Returns a predicate that is True if any of the feature in the
+    list is in the microarchitecture being tested, False otherwise.
+    """
+    def _impl(microarchitecture):
+        return any(x in microarchitecture for x in list_of_features)
+    return _impl
+
+
+@alias_predicate
+def families(list_of_families):
+    """Returns a predicate that is True if the architecture family of
+    the microarchitecture being tested is in the list, False otherwise.
+    """
+    def _impl(microarchitecture):
+        return str(microarchitecture.architecture_family) in list_of_families
+    return _impl
 
 
 class MicroArchitecture(object):
+    #: Aliases for micro-architecture's features
+    feature_aliases = LazyDictionary(_feature_aliases)
+
     def __init__(
             self, name, parents, vendor, features, compilers, generation=0
     ):
@@ -116,8 +234,16 @@ class MicroArchitecture(object):
         return self.name
 
     def __contains__(self, feature):
-        # The semantic here looks for the exact feature name
-        return feature in self.features
+        # Here we look first in the raw features, and fall-back to
+        # feature aliases if not match was found
+        if feature in self.features:
+            return True
+
+        # Check if the alias is defined, if not it will return False
+        match_alias = MicroArchitecture.feature_aliases.get(
+            feature, lambda x: False
+        )
+        return match_alias(self)
 
     @property
     def architecture_family(self):
@@ -141,12 +267,9 @@ def generic_microarchitecture(name):
     )
 
 
-def _load_microarchitectures_from_json():
-    """Loads all the known micro-architectures from JSON. If the current host
-    platform is unknown adds it too as a generic target.
-
-    Returns:
-        OrderedDict with all the known micro-architectures.
+def _known_microarchitectures():
+    """Returns a dictionary of the known micro-architectures. If the
+    current host platform is unknown adds it too as a generic target.
     """
 
     # TODO: Simplify this logic using object_pairs_hook to OrderedDict
@@ -190,12 +313,8 @@ def _load_microarchitectures_from_json():
             name, parents, vendor, features, compilers, generation
         )
 
-    this_dir = os.path.dirname(os.path.abspath(__file__))
-    filename = os.path.join(this_dir, 'targets.json')
-    with open(filename, 'r') as f:
-        data = json.load(f)['micro_architectures']
-
-    targets = OrderedDict()
+    targets = {}
+    data = _targets_json['microarchitectures']
     for name in data:
         if name in targets:
             # name was already brought in as ancestor to a target
@@ -210,7 +329,7 @@ def _load_microarchitectures_from_json():
 
 
 #: Dictionary of known micro-architectures
-targets = _load_microarchitectures_from_json()
+targets = LazyDictionary(_known_microarchitectures)
 
 
 def supported_target_names():

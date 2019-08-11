@@ -128,7 +128,11 @@ def test_architecture_family(target_name, expected_family):
 
 @pytest.mark.parametrize('target_name,feature', [
     ('skylake', 'avx2'),
-    ('icelake', 'avx512f')
+    ('icelake', 'avx512f'),
+    # Test feature aliases
+    ('icelake', 'avx512'),
+    ('skylake', 'sse3'),
+    ('power8', 'altivec')
 ])
 def test_features_query(target_name, feature):
     target = llnl.util.cpu.targets[target_name]

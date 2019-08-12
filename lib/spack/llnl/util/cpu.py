@@ -18,6 +18,81 @@ except ImportError:
 import six
 
 
+compilers_schema = {
+    'type': 'object',
+    'properties': {
+        'versions': {'type': 'string'},
+        'name': {'type': 'string'}
+    },
+    'required': ['versions']
+}
+
+
+properties = {
+    'microarchitectures': {
+        'type': 'object',
+        'patternProperties': {
+            r'([\w]*)': {
+                'type': 'object',
+                'properties': {
+                    'from': {
+                        'anyOf': [
+                            # More than one parent
+                            {'type': 'array', 'items': {'type': 'string'}},
+                            # Exactly one parent
+                            {'type': 'string'},
+                            # No parent
+                            {'type': 'null'}
+                        ]
+                    },
+                    'vendor': {
+                        'type': 'string'
+                    },
+                    'features': {
+                        'type': 'array',
+                        'items': {'type': 'string'}
+                    },
+                    'compilers': {
+                        'type': 'object',
+                        'patternProperties': {
+                            r'([\w]*)': {
+                                'anyOf': [
+                                    compilers_schema,
+                                    {
+                                        'type': 'array',
+                                        'items': compilers_schema
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                'required': ['from', 'vendor', 'features']
+            }
+        }
+    },
+    'feature_aliases': {
+        'type': 'object',
+        'patternProperties': {
+            r'([\w]*)': {
+                'type': 'object',
+                'properties': {},
+                'additionalProperties': False
+            }
+        },
+
+    }
+}
+
+schema = {
+    '$schema': 'http://json-schema.org/schema#',
+    'title': 'Schema for microarchitecture definitions and feature aliases',
+    'type': 'object',
+    'additionalProperties': False,
+    'properties': properties,
+}
+
+
 class LazyDictionary(MutableMapping):
     """Lazy dictionary that gets constructed on first access to any object key
 
@@ -95,22 +170,38 @@ def _feature_aliases():
     return aliases
 
 
-def alias_predicate(func):
+def alias_predicate(predicate_schema):
     """Decorator to register a predicate that can be used to define
     feature aliases.
+
+    Args:
+        predicate_schema (dict): schema to be enforced in targets.json
+            for the predicate
     """
-    name = func.__name__
-    if name in _feature_alias_predicate:
-        msg = 'the feature alias predicate "{0}" already exists'.format(name)
-        raise KeyError(msg)
+    def decorator(func):
+        name = func.__name__
 
-    # TODO: This must update the schema when we'll add it
-    _feature_alias_predicate[name] = func
+        # Check we didn't register anything else with the same name
+        if name in _feature_alias_predicate:
+            msg = 'the alias predicate "{0}" already exists'.format(name)
+            raise KeyError(msg)
 
-    return func
+        # Update the overall schema
+        alias_schema = properties['feature_aliases']['patternProperties']
+        alias_schema[r'([\w]*)']['properties'].update(
+            {name: predicate_schema}
+        )
+        # Register the predicate
+        _feature_alias_predicate[name] = func
+
+        return func
+    return decorator
 
 
-@alias_predicate
+@alias_predicate(predicate_schema={
+    'type': 'array',
+    'items': {'type': 'string'}
+})
 def any_of(list_of_features):
     """Returns a predicate that is True if any of the feature in the
     list is in the microarchitecture being tested, False otherwise.
@@ -120,7 +211,10 @@ def any_of(list_of_features):
     return _impl
 
 
-@alias_predicate
+@alias_predicate(predicate_schema={
+    'type': 'array',
+    'items': {'type': 'string'}
+})
 def families(list_of_families):
     """Returns a predicate that is True if the architecture family of
     the microarchitecture being tested is in the list, False otherwise.
@@ -300,11 +394,7 @@ def _known_microarchitectures():
             fill_target_from_dict(p, data, targets)
         parents = [targets.get(p) for p in parent_names]
 
-        # Get target vendor
-        vendor = values.get('vendor', None)
-        if not vendor:
-            vendor = parents[0].vendor
-
+        vendor = values['vendor']
         features = set(values['features'])
         compilers = values.get('compilers', {})
         generation = values.get('generation', 0)

@@ -678,11 +678,13 @@
   },
   "feature_aliases": {
     "sse3": {
+      "reason": "ssse3 is a superset of sse3 and might be the only one listed",
       "any_of": [
         "ssse3"
       ]
     },
     "avx512": {
+      "reason": "avx512 indicates generic support for any of the avx512 instruction sets",
       "any_of": [
         "avx512f",
         "avx512vl",
@@ -692,9 +694,18 @@
       ]
     },
     "altivec": {
+      "reason": "altivec is supported by Power PC architectures, but might not be listed in features",
       "families": [
         "ppc64le"
       ]
+    },
+    "sse4.1": {
+      "reason": "permits to refer to sse4_1 also as sse4.1",
+      "any_of": ["sse4_1"]
+    },
+    "sse4.2": {
+      "reason": "permits to refer to sse4_2 also as sse4.2",
+      "any_of": ["sse4_2"]
     }
   }
 }

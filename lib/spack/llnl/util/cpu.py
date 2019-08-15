@@ -200,6 +200,14 @@ def alias_predicate(predicate_schema):
     return decorator
 
 
+@alias_predicate(predicate_schema={'type': 'string'})
+def reason(motivation_for_the_alias):
+    """This predicate returns always True and it's there to allow writing
+    a documentation string in the JSON file to explain why an alias is needed.
+    """
+    return lambda x: True
+
+
 @alias_predicate(predicate_schema={
     'type': 'array',
     'items': {'type': 'string'}

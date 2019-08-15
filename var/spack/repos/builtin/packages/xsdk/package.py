@@ -28,6 +28,7 @@ class Xsdk(BundlePackage):
     variant('omega-h', default=True, description='Enable omega-h package build')
     variant('dealii', default=True, description='Enable dealii package build')
     variant('phist', default=True, description='Enable phist package build')
+    variant('ginkgo', default=True, description='Enable ginkgo package build')
     variant('libensemble', default=True, description='Enable py-libensemble package build')
     variant('precice', default=True, description='Enable precice package build')
     variant('butterflypack', default=True, description='Enable butterflypack package build')
@@ -140,10 +141,10 @@ class Xsdk(BundlePackage):
     depends_on('phist@1.8.0 kernel_lib=tpetra ~fortran ~scamac ~openmp ~host', when='@0.5.0 +phist')
     depends_on('phist@1.7.5 kernel_lib=tpetra ~fortran ~scamac ~openmp ~host', when='@0.4.0 +phist')
 
-    depends_on('ginkgo@develop ~openmp', when='@develop')
-    depends_on('ginkgo@develop ~openmp+cuda', when='@develop +cuda')
-    depends_on('ginkgo@1.0.0 ~openmp', when='@0.5.0')
-    depends_on('ginkgo@1.0.0 ~openmp+cuda', when='@0.5.0 +cuda')
+    depends_on('ginkgo@develop ~openmp', when='@develop +ginkgo')
+    depends_on('ginkgo@develop ~openmp+cuda', when='@develop +ginkgo +cuda')
+    depends_on('ginkgo@1.0.0 ~openmp', when='@0.5.0 +ginkgo')
+    depends_on('ginkgo@1.0.0 ~openmp+cuda', when='@0.5.0 +cuda +ginkgo')
 
     depends_on('py-libensemble@develop+petsc4py', when='@develop +libensemble')
     depends_on('py-libensemble@0.5.2+petsc4py', when='@0.5.0 +libensemble')

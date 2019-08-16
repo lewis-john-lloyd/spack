@@ -25,7 +25,9 @@ from llnl.util.cpu import MicroArchitecture  # noqa
     'linux-rhel7-ivybridge',
     'linux-rhel7-haswell',
     'linux-rhel7-zen',
-    'linux-centos7-power8'
+    'linux-centos7-power8',
+    'darwin-mojave-ivybridge',
+    'darwin-mojave-broadwell'
 ])
 def expected_target(request, monkeypatch):
     platform, operating_system, target = request.param.split('-')
@@ -49,7 +51,23 @@ def expected_target(request, monkeypatch):
 
         monkeypatch.setattr(llnl.util.cpu, 'open', _open, raising=False)
 
-    # TODO: need to code the fixture logic for Darwin
+    elif platform == 'darwin':
+        monkeypatch.setattr(llnl.util.cpu.platform, 'system', lambda: 'Darwin')
+
+        filename = os.path.join(
+            spack.paths.test_path, 'data', 'targets', request.param
+        )
+        info = {}
+        with open(filename) as f:
+            for line in f:
+                key, value = line.split(':')
+                info[key.strip()] = value.strip()
+
+        def _check_output(args):
+            current_key = args[-1]
+            return info[current_key]
+
+        monkeypatch.setattr(llnl.util.cpu, 'check_output', _check_output)
 
     return llnl.util.cpu.targets[target]
 

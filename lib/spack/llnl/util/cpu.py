@@ -501,15 +501,17 @@ def proc_cpuinfo():
     return info
 
 
+def check_output(args):
+    if sys.version_info[:2] == (2, 6):
+        return subprocess.run(
+            args, check=True, stdout=subprocess.PIPE).stdout  # nopyqver
+    else:
+        return subprocess.check_output(args)  # nopyqver
+
+
 @info_dict(operating_system='Darwin')
 def sysctl():
     """Returns a raw info dictionary parsing the output of sysctl."""
-    def check_output(args):
-        if sys.version_info[:2] == (2, 6):
-            return subprocess.run(
-                args, check=True, stdout=subprocess.PIPE).stdout  # nopyqver
-        else:
-            return subprocess.check_output(args)  # nopyqver
 
     info = {}
     info['vendor_id'] = check_output(

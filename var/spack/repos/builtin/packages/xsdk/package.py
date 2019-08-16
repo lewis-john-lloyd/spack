@@ -25,6 +25,7 @@ class Xsdk(BundlePackage):
 
     variant('debug', default=False, description='Compile in debug mode')
     variant('cuda', default=False, description='Enable CUDA dependent packages')
+    variant('trilinos', default=True, description='Enable trilinos package build')
     variant('omega-h', default=True, description='Enable omega-h package build')
     variant('dealii', default=True, description='Enable dealii package build')
     variant('phist', default=True, description='Enable phist package build')
@@ -51,30 +52,34 @@ class Xsdk(BundlePackage):
     depends_on('superlu-dist@xsdk-0.2.0', when='@xsdk-0.2.0')
 
     depends_on('trilinos@develop+hypre+superlu-dist+metis+hdf5~mumps+boost~suite-sparse+tpetra+nox+ifpack2+zoltan2+amesos2~exodus+dtk+intrepid2+shards',
-               when='@develop')
+               when='@develop +trilinos')
     depends_on('trilinos@12.16+hypre+superlu-dist+metis+hdf5~mumps+boost~suite-sparse+tpetra+nox+ifpack2+zoltan2+amesos2~exodus+dtk+intrepid2+shards',
-               when='@0.5.0')
+               when='@0.5.0 +trilinos')
     depends_on('trilinos@12.14.1+hypre+superlu-dist+metis+hdf5~mumps+boost~suite-sparse+tpetra+nox+ifpack2+zoltan2+amesos2~exodus+dtk+intrepid2+shards',
-               when='@0.4.0')
+               when='@0.4.0 +trilinos')
     depends_on('trilinos@12.12.1+hypre+superlu-dist+metis+hdf5~mumps+boost~suite-sparse~tpetra~ifpack2~zoltan2~amesos2~exodus',
-               when='@0.3.0')
+               when='@0.3.0 +trilinos')
     depends_on('trilinos@xsdk-0.2.0+hypre+superlu-dist+metis+hdf5~mumps+boost~suite-sparse~tpetra~ifpack2~zoltan2~amesos2~exodus',
-               when='@xsdk-0.2.0')
+               when='@xsdk-0.2.0 +trilinos')
 
-    depends_on('petsc@develop+trilinos+mpi+hypre+superlu-dist+metis+hdf5~mumps+double~int64',
+    depends_on('petsc +trilinos', when='+trilinos')
+    depends_on('petsc ~trilinos', when='~trilinos')
+    depends_on('petsc@develop+mpi+hypre+superlu-dist+metis+hdf5~mumps+double~int64',
                when='@develop')
-    depends_on('petsc@3.12.0+trilinos+mpi+hypre+superlu-dist+metis+hdf5~mumps+double~int64',
+    depends_on('petsc@3.12.0+mpi+hypre+superlu-dist+metis+hdf5~mumps+double~int64',
                when='@0.5.0')
-    depends_on('petsc@3.10.3+trilinos+mpi+hypre+superlu-dist+metis+hdf5~mumps+double~int64',
+    depends_on('petsc@3.10.3+mpi+hypre+superlu-dist+metis+hdf5~mumps+double~int64',
                when='@0.4.0')
-    depends_on('petsc@3.8.2+trilinos+mpi+hypre+superlu-dist+metis+hdf5~mumps+double~int64',
+    depends_on('petsc@3.8.2+mpi+hypre+superlu-dist+metis+hdf5~mumps+double~int64',
                when='@0.3.0')
-    depends_on('petsc@xsdk-0.2.0+trilinos+mpi+hypre+superlu-dist+metis+hdf5~mumps+double~int64',
+    depends_on('petsc@xsdk-0.2.0+mpi+hypre+superlu-dist+metis+hdf5~mumps+double~int64',
                when='@xsdk-0.2.0')
 
-    depends_on('dealii@develop~assimp~python~doc~gmsh+petsc+slepc+mpi+trilinos~int64+hdf5~netcdf+metis~sundials~ginkgo~symengine', when='@develop +dealii')
-    depends_on('dealii@9.1.99~assimp~python~doc~gmsh+petsc+slepc+mpi+trilinos~int64+hdf5~netcdf+metis~sundials~ginkgo~symengine', when='@0.5.0 +dealii')
-    depends_on('dealii@9.0.1~assimp~python~doc~gmsh+petsc~slepc+mpi+trilinos~int64+hdf5~netcdf+metis~ginkgo~symengine', when='@0.4.0 +dealii')
+    depends_on('dealii +trilinos', when='+trilinos +dealii')
+    depends_on('dealii ~trilinos', when='~trilinos +dealii')
+    depends_on('dealii@develop~assimp~python~doc~gmsh+petsc+slepc+mpi~int64+hdf5~netcdf+metis~sundials~ginkgo~symengine', when='@develop +dealii')
+    depends_on('dealii@9.1.99~assimp~python~doc~gmsh+petsc+slepc+mpi~int64+hdf5~netcdf+metis~sundials~ginkgo~symengine', when='@0.5.0 +dealii')
+    depends_on('dealii@9.0.1~assimp~python~doc~gmsh+petsc~slepc+mpi~int64+hdf5~netcdf+metis~ginkgo~symengine', when='@0.4.0 +dealii')
 
     depends_on('pflotran@develop', when='@develop')
     depends_on('pflotran@xsdk-0.5.0', when='@0.5.0')
@@ -113,6 +118,8 @@ class Xsdk(BundlePackage):
     depends_on('slepc@3.12.0', when='@0.5.0')
     depends_on('slepc@3.10.1', when='@0.4.0')
 
+    depends_on('omega-h +trilinos', when='+trilinos +omega-h')
+    depends_on('omega-h ~trilinos', when='~trilinos +omega-h')
     depends_on('omega-h@develop', when='@develop +omega-h')
     depends_on('omega-h@develop', when='@0.5.0 +omega-h')
     depends_on('omega-h@9.19.1', when='@0.4.0 +omega-h')
@@ -137,9 +144,12 @@ class Xsdk(BundlePackage):
     # these are type='build' dependencies, but spack reports a conflict anyway.
     # This will be fixed once the new concretizer becomes available
     # (says @adamjstewart)
-    depends_on('phist@develop kernel_lib=tpetra ~fortran ~scamac ~openmp ~host', when='@develop +phist')
-    depends_on('phist@1.8.0 kernel_lib=tpetra ~fortran ~scamac ~openmp ~host', when='@0.5.0 +phist')
-    depends_on('phist@1.7.5 kernel_lib=tpetra ~fortran ~scamac ~openmp ~host', when='@0.4.0 +phist')
+
+    depends_on('phist kernel_lib=tpetra', when='+trilinos +phist')
+    depends_on('phist kernel_lib=petsc', when='~trilinos +phist')
+    depends_on('phist@develop ~fortran ~scamac ~openmp ~host', when='@develop +phist')
+    depends_on('phist@1.8.0 ~fortran ~scamac ~openmp ~host', when='@0.5.0 +phist')
+    depends_on('phist@1.7.5 ~fortran ~scamac ~openmp ~host', when='@0.4.0 +phist')
 
     depends_on('ginkgo@develop ~openmp', when='@develop +ginkgo')
     depends_on('ginkgo@develop ~openmp+cuda', when='@develop +ginkgo +cuda')

@@ -287,6 +287,9 @@ class MicroArchitecture(object):
         return value
 
     def _ensure_strictly_orderable(self, other):
+        if self == other:
+            return
+
         if not (self in other.ancestors or other in self.ancestors):
             msg = "There is no ordering relationship between targets "
             msg += "%s and %s." % (self.name, other.name)

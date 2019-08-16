@@ -111,7 +111,8 @@ def test_partial_ordering_failures(target, other_target, err_cls):
     (llnl.util.cpu.targets['x86_64'], '<', llnl.util.cpu.targets['skylake']),
     (llnl.util.cpu.targets['icelake'], '>', llnl.util.cpu.targets['skylake']),
     (llnl.util.cpu.targets['piledriver'], '<=', llnl.util.cpu.targets['zen']),
-    (llnl.util.cpu.targets['zen2'], '>=', llnl.util.cpu.targets['zen'])
+    (llnl.util.cpu.targets['zen2'], '>=', llnl.util.cpu.targets['zen']),
+    (llnl.util.cpu.targets['zen'], '>=', llnl.util.cpu.targets['zen'])
 ])
 def test_partial_ordering(target, operation, other_target):
     code = 'target' + operation + 'other_target'

@@ -85,6 +85,9 @@ class NoPlatformError(serr.SpackError):
 
 
 def _ensure_other_is_target(method):
+    """Decorator to be used in dunder methods taking a single argument to
+    ensure that the argument is an instance of ``Target`` too.
+    """
     @functools.wraps(method)
     def _impl(self, other):
         if isinstance(other, six.string_types):

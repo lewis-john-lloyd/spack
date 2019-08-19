@@ -168,15 +168,9 @@ class Target(object):
         if self.micro_architecture.vendor == 'generic':
             return str(self)
 
-        return syaml_dict([
-            ('name', str(self.micro_architecture.name)),
-            ('vendor', str(self.micro_architecture.vendor)),
-            ('features', sorted(
-                str(x) for x in self.micro_architecture.features
-            )),
-            ('generation', self.micro_architecture.generation),
-            ('parents', [str(x) for x in self.micro_architecture.parents])
-        ])
+        return syaml_dict(
+            self.micro_architecture.to_dict(return_list_of_items=True)
+        )
 
     def isa_target_for(self, compiler):
         """Returns the name to be used to optimize for the current target

@@ -362,6 +362,27 @@ class MicroArchitecture(object):
 
         return roots.pop()
 
+    def to_dict(self, return_list_of_items=False):
+        """Returns a dictionary representation of this object.
+
+        Args:
+            return_list_of_items (bool): if True returns an ordered list of
+                items instead of the dictionary
+        """
+        list_of_items = [
+            ('name', str(self.name)),
+            ('vendor', str(self.vendor)),
+            ('features', sorted(
+                str(x) for x in self.features
+            )),
+            ('generation', self.generation),
+            ('parents', [str(x) for x in self.parents])
+        ]
+        if return_list_of_items:
+            return list_of_items
+
+        return dict(list_of_items)
+
 
 def generic_microarchitecture(name):
     """Returns a generic micro-architecture with no vendor and no features.

@@ -2234,7 +2234,7 @@ class Spec(object):
 
         # Check if we can produce an optimized binary (will throw if
         # there are declared inconsistencies)
-        self.architecture.target.isa_target_for(self.compiler)
+        self.architecture.target.target_name_for(self.compiler)
 
     def _mark_concrete(self, value=True):
         """Mark this spec and its dependencies as concrete.

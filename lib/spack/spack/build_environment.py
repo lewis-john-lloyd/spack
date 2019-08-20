@@ -202,7 +202,7 @@ def set_compiler_environment_variables(pkg, env):
 
     # Set the target parameters that the compiler will add
     isa_arg = ''
-    isa_target = spec.architecture.target.isa_target_for(compiler)
+    isa_target = spec.architecture.target.target_name_for(compiler)
     if compiler.isa_flag and isa_target:
         isa_arg = '{0}={1}'.format(compiler.isa_flag, isa_target)
     env.set('SPACK_TARGET_ARGS', isa_arg)

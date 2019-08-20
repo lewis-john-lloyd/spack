@@ -172,10 +172,10 @@ class Target(object):
             self.micro_architecture.to_dict(return_list_of_items=True)
         )
 
-    def isa_target_for(self, compiler):
+    def target_name_for(self, compiler):
         """Returns the name to be used to optimize for the current target
-        using the compiler passed as argument, or None if the information
-        is not available.
+        micro-architecture using the compiler passed as argument, or None
+        if the information is not available.
 
         Args:
             compiler: object with a ``name`` and ``version`` attribute for

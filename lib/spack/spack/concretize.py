@@ -239,8 +239,8 @@ class Concretizer(object):
         if spec.architecture is None:
             spec.architecture = spack.spec.ArchSpec()
 
-        if spec.architecture.platform and (spec.architecture.os and
-                                           spec.architecture.target):
+        if spec.architecture.platform and \
+                (spec.architecture.os and spec.architecture.target):
             return False
 
         # Get platform of nearest spec with a platform, including spec

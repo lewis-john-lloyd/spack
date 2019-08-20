@@ -285,7 +285,7 @@ class ArchSpec(object):
 
     @property
     def os(self):
-        """The OS of the architecture."""
+        """The OS of this ArchSpec."""
         return self._os
 
     @os.setter

@@ -297,7 +297,6 @@ def test_find_no_sections(database, config):
 
 
 @pytest.mark.db
-@pytest.mark.usefixtures('database')
-def test_find_command_basic_usage():
+def test_find_command_basic_usage(database):
     output = find()
     assert 'mpileaks' in output

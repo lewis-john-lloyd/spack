@@ -678,25 +678,37 @@
     "ppc64le": {
       "from": null,
       "vendor": "generic",
-      "features": []
+      "features": [],
+      "compilers": {
+        "gcc": {
+          "versions": "4:",
+          "flags": "-mcpu={name} -mtune={name}"
+        }
+      }
     },
     "power8": {
       "from": "ppc64le",
       "vendor": "IBM",
       "generation": 8,
-      "features": []
+      "features": [],
+      "compilers": {
+        "gcc": {
+          "versions": "4.9:",
+          "flags": "-mcpu={name} -mtune={name}"
+        }
+      }
     },
     "power9": {
       "from": "power8",
       "vendor": "IBM",
       "generation": 9,
-      "features": []
-    },
-    "power10": {
-      "from": "power9",
-      "vendor": "IBM",
-      "generation": 10,
-      "features": []
+      "features": [],
+      "compilers": {
+        "gcc": {
+          "versions": "6:",
+          "flags": "-mcpu={name} -mtune={name}"
+        }
+      }
     }
   },
   "feature_aliases": {

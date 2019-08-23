@@ -11,6 +11,7 @@ import platform
 import re
 import subprocess
 import sys
+import warnings
 
 try:
     from collections.abc import MutableMapping, Sequence
@@ -443,6 +444,12 @@ class MicroArchitecture(object):
                 # If there's no field name, use the name of the
                 # micro-architecture
                 compiler_entry.setdefault('name', self.name)
+
+                # Check if we need to emit a warning
+                warning_message = compiler_entry.get('warnings', None)
+                if warning_message:
+                    warnings.warn(warning_message)
+
                 flags = flags_fmt.format(**compiler_entry)
                 return flags
 

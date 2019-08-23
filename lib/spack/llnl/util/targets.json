@@ -692,10 +692,14 @@
       "generation": 8,
       "features": [],
       "compilers": {
-        "gcc": {
+        "gcc": [{
           "versions": "4.9:",
           "flags": "-mcpu={name} -mtune={name}"
-        }
+        }, {
+          "versions": "4.8:4.8.5",
+          "warnings": "Using GCC 4.8 to optimize for Power 8 might not work if you are not on Red Hat Enterprise Linux 7, where a custom backport of the feature has been done. Upstream support from GCC starts in version 4.9",
+          "flags": "-mcpu={name} -mtune={name}"
+        }]
       }
     },
     "power9": {

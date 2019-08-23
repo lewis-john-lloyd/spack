@@ -13,9 +13,9 @@ import subprocess
 import sys
 
 try:
-    from collections.abc import MutableMapping
+    from collections.abc import MutableMapping, Sequence
 except ImportError:
-    from collections import MutableMapping
+    from collections import MutableMapping, Sequence
 
 import six
 
@@ -24,9 +24,10 @@ compilers_schema = {
     'type': 'object',
     'properties': {
         'versions': {'type': 'string'},
-        'name': {'type': 'string'}
+        'name': {'type': 'string'},
+        'flags': {'type': 'string'}
     },
-    'required': ['versions']
+    'required': ['versions', 'flags']
 }
 
 
@@ -383,6 +384,75 @@ class MicroArchitecture(object):
 
         return dict(list_of_items)
 
+    def optimization_flags(self, compiler, version):
+        """Returns a string containing the optimization flags that needs
+        to be used to produce code optimized for this micro-architecture.
+
+        If there is no information on the compiler passed as argument the
+        function returns an empty string. If it is known that the compiler
+        version we want to use does not support this architecture the function
+        raises an exception.
+
+        Args:
+            compiler (str): name of the compiler to be used
+            version (str): version of the compiler to be used
+        """
+        # If we don't have information on compiler return an empty string
+        if compiler not in self.compilers:
+            return ''
+
+        # If we have information on this compiler we need to check the
+        # version being used
+        compiler_info = self.compilers[compiler]
+
+        # Normalize the entries to have a uniform treatment in the code below
+        if not isinstance(compiler_info, Sequence):
+            compiler_info = [compiler_info]
+
+        def satisfies_constraint(entry, version):
+            min_version, max_version = entry['versions'].split(':')
+
+            # Check version suffixes
+            min_version, _, min_suffix = min_version.partition('-')
+            max_version, _, max_suffix = max_version.partition('-')
+            version, _, suffix = version.partition('-')
+
+            # If the suffixes are not all equal there's no match
+            if suffix != min_suffix or suffix != max_suffix:
+                return False
+
+            # Assume compiler versions fit into semver
+            tuplify = lambda x: tuple(int(y) for y in x.split('.'))
+
+            version = tuplify(version)
+            if min_version:
+                min_version = tuplify(min_version)
+                if min_version > version:
+                    return False
+
+            if max_version:
+                max_version = tuplify(max_version)
+                if max_version < version:
+                    return False
+
+            return True
+
+        for compiler_entry in compiler_info:
+            if satisfies_constraint(compiler_entry, version):
+                flags_fmt = compiler_entry['flags']
+                # If there's no field name, use the name of the
+                # micro-architecture
+                compiler_entry.setdefault('name', self.name)
+                flags = flags_fmt.format(**compiler_entry)
+                return flags
+
+        msg = 'cannot produce optimized binary for micro-architecture "{0}"' \
+              ' with {1}@{2} ' \
+              '[supported compiler versions are {3}]'
+        msg = msg.format(self.name, compiler, version,
+                         ', '.join([x['versions'] for x in compiler_info]))
+        raise UnsupportedMicroArchitecture(msg)
+
 
 def generic_microarchitecture(name):
     """Returns a generic micro-architecture with no vendor and no features.
@@ -661,3 +731,9 @@ def compatibility_check_for_x86_64(info, target):
     return (target == arch_root or arch_root in target.ancestors) \
         and (target.vendor == vendor or target.vendor == 'generic') \
         and target.features.issubset(features)
+
+
+class UnsupportedMicroArchitecture(ValueError):
+    """Raised if a compiler version does not support optimization for a given
+    micro-architecture.
+    """

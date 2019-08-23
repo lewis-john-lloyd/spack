@@ -204,10 +204,6 @@ class Compiler(object):
     def fc_rpath_arg(self):
         return '-Wl,-rpath,'
 
-    @property
-    def isa_flag(self):
-        return '-march'
-
     # Cray PrgEnv name that can be used to load this compiler
     PrgEnv = None
     # Name of module used to switch versions of this compiler

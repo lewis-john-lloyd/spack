@@ -201,10 +201,7 @@ def set_compiler_environment_variables(pkg, env):
     env.set('SPACK_FC_RPATH_ARG',  compiler.fc_rpath_arg)
 
     # Set the target parameters that the compiler will add
-    isa_arg = ''
-    isa_target = spec.architecture.target.target_name_for(compiler)
-    if compiler.isa_flag and isa_target:
-        isa_arg = '{0}={1}'.format(compiler.isa_flag, isa_target)
+    isa_arg = spec.architecture.target.optimization_flags(compiler)
     env.set('SPACK_TARGET_ARGS', isa_arg)
 
     # Trap spack-tracked compiler flags as appropriate.

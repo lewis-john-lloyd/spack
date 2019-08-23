@@ -176,3 +176,30 @@ def test_target_json_schema():
     # only once during unit tests.
     json_data = llnl.util.cpu._targets_json.data
     jsonschema.validate(json_data, llnl.util.cpu.schema)
+
+
+@pytest.mark.parametrize('target_name,compiler,version,expected_flags', [
+    ('x86_64', 'gcc', '4.9.3', '-march=x86-64 -mtune=x86-64'),
+    ('nocona', 'gcc', '4.9.3', '-march=nocona -mtune=nocona'),
+    ('nehalem', 'gcc', '4.9.3', '-march=nehalem -mtune=nehalem'),
+    ('nehalem', 'gcc', '4.8.5', '-march=corei7 -mtune=corei7'),
+    ('sandybridge', 'gcc', '4.8.5', '-march=corei7-avx -mtune=corei7-avx'),
+    # Test that an unknown compiler returns an empty string
+    ('sandybridge', 'unknown', '4.8.5', ''),
+])
+def test_optimization_flags(target_name, compiler, version, expected_flags):
+    target = llnl.util.cpu.targets[target_name]
+    flags = target.optimization_flags(compiler, version)
+    assert flags == expected_flags
+
+
+@pytest.mark.parametrize('target_name,compiler,version', [
+    ('excavator', 'gcc', '4.8.5')
+])
+def test_unsupported_optimization_flags(target_name, compiler, version):
+    target = llnl.util.cpu.targets[target_name]
+    with pytest.raises(
+            llnl.util.cpu.UnsupportedMicroArchitecture,
+            matches='cannot produce optimized binary'
+    ):
+        target.optimization_flags(compiler, version)

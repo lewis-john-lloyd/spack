@@ -56,11 +56,6 @@ set. The user can set the front-end and back-end operating setting by the class
 attributes front_os and back_os. The operating system as described earlier,
 will be responsible for compiler detection.
 """
-try:
-    from collections.abc import Sequence
-except ImportError:
-    from collections import Sequence
-
 import functools
 import inspect
 
@@ -172,43 +167,6 @@ class Target(object):
             self.micro_architecture.to_dict(return_list_of_items=True)
         )
 
-    def target_name_for(self, compiler):
-        """Returns the name to be used to optimize for the current target
-        micro-architecture using the compiler passed as argument, or None
-        if the information is not available.
-
-        Args:
-            compiler: object with a ``name`` and ``version`` attribute for
-                the compiler being used.
-
-        Raises:
-            UnsupportedMicroArchitecture: if the compiler version passed as
-                argument doesn't support the current micro-architecture.
-        """
-        # No information available on compiler: return None
-        if compiler.name not in self.micro_architecture.compilers:
-            return None
-
-        # Get the information on supported compiler versions
-        constraints = self.micro_architecture.compilers[compiler.name]
-        if not isinstance(constraints, Sequence):
-            constraints = [constraints]
-
-        for constraint in constraints:
-            version_request = spack.version.ver(constraint['versions'])
-            if compiler.version.satisfies(version_request):
-                # The name to be used defaults to the micro-architecture name,
-                # but can be overridden by compiler info in the JSON file
-                name = constraint.get('name', None) or self.name
-                return name
-
-        msg = 'cannot produce optimized binary for micro-architecture "{0}"' \
-            ' with {1.name}@{1.version!s} ' \
-            '[supported compiler versions are {2}]'
-        msg = msg.format(self.micro_architecture.name, compiler,
-                         ', '.join([x['versions'] for x in constraints]))
-        raise UnsupportedMicroArchitecture(msg)
-
     def __repr__(self):
         cls_name = self.__class__.__name__
         fmt = cls_name + '({0}, {1})'
@@ -220,6 +178,11 @@ class Target(object):
 
     def __contains__(self, cpu_flag):
         return cpu_flag in self.micro_architecture
+
+    def optimization_flags(self, compiler):
+        return self.micro_architecture.optimization_flags(
+            compiler.name, str(compiler.version)
+        )
 
 
 @key_ordering
@@ -526,7 +489,3 @@ def sys_type():
     """
     arch = Arch(platform(), 'default_os', 'default_target')
     return str(arch)
-
-
-class UnsupportedMicroArchitecture(serr.SpackError, ValueError):
-    pass

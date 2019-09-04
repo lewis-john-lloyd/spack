@@ -98,7 +98,7 @@ def _ensure_other_is_target(method):
 
 class Target(object):
     def __init__(self, name, module_name=None):
-        """Target models the processor of the current architecture.
+        """Target models microarchitectures and their compatibility.
 
         Args:
             name (str or MicroArchitecture):micro-architecture of the
@@ -111,16 +111,16 @@ class Target(object):
             name = cpu.targets.get(
                 name, cpu.generic_microarchitecture(name)
             )
-        self.micro_architecture = name
+        self.microarchitecture = name
         self.module_name = module_name
 
     @property
     def name(self):
-        return self.micro_architecture.name
+        return self.microarchitecture.name
 
     @_ensure_other_is_target
     def __eq__(self, other):
-        return self.micro_architecture == other.micro_architecture and \
+        return self.microarchitecture == other.microarchitecture and \
             self.module_name == other.module_name
 
     def __ne__(self, other):
@@ -130,9 +130,13 @@ class Target(object):
 
     @_ensure_other_is_target
     def __lt__(self, other):
+        # TODO: In the future it would be convenient to say
+        # TODO: `spec.architecture.target < other.architecture.target`
+        # TODO: and change the semantic of the comparison operators
+
         # This is needed to sort deterministically specs in a list.
         # It doesn't implement a total ordering semantic.
-        return self.micro_architecture.name < other.micro_architecture.name
+        return self.microarchitecture.name < other.microarchitecture.name
 
     def __hash__(self):
         return hash((self.name, self.module_name))
@@ -160,27 +164,27 @@ class Target(object):
         """
         # Generic targets represent either an architecture
         # family (like x86_64) or a custom micro-architecture
-        if self.micro_architecture.vendor == 'generic':
+        if self.microarchitecture.vendor == 'generic':
             return str(self)
 
         return syaml_dict(
-            self.micro_architecture.to_dict(return_list_of_items=True)
+            self.microarchitecture.to_dict(return_list_of_items=True)
         )
 
     def __repr__(self):
         cls_name = self.__class__.__name__
         fmt = cls_name + '({0}, {1})'
-        return fmt.format(repr(self.micro_architecture),
+        return fmt.format(repr(self.microarchitecture),
                           repr(self.module_name))
 
     def __str__(self):
-        return str(self.micro_architecture)
+        return str(self.microarchitecture)
 
     def __contains__(self, cpu_flag):
-        return cpu_flag in self.micro_architecture
+        return cpu_flag in self.microarchitecture
 
     def optimization_flags(self, compiler):
-        return self.micro_architecture.optimization_flags(
+        return self.microarchitecture.optimization_flags(
             compiler.name, str(compiler.version)
         )
 
@@ -381,7 +385,7 @@ class Arch(object):
         else:
             os = self.os
         if isinstance(self.target, Target):
-            target = self.target.micro_architecture
+            target = self.target.microarchitecture
         else:
             target = self.target
         return (platform, os, target)

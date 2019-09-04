@@ -32,7 +32,7 @@ from llnl.util.cpu import MicroArchitecture  # noqa
 def expected_target(request, monkeypatch):
     platform, operating_system, target = request.param.split('-')
 
-    architecture_family = llnl.util.cpu.targets[target].architecture_family
+    architecture_family = llnl.util.cpu.targets[target].family
     monkeypatch.setattr(
         llnl.util.cpu.platform, 'machine', lambda: str(architecture_family)
     )
@@ -144,7 +144,7 @@ def test_partial_ordering(target, operation, other_target):
 ])
 def test_architecture_family(target_name, expected_family):
     target = llnl.util.cpu.targets[target_name]
-    assert str(target.architecture_family) == expected_family
+    assert str(target.family) == expected_family
 
 
 @pytest.mark.parametrize('target_name,feature', [

@@ -233,7 +233,7 @@ def families(list_of_families):
     the microarchitecture being tested is in the list, False otherwise.
     """
     def _impl(microarchitecture):
-        return str(microarchitecture.architecture_family) in list_of_families
+        return str(microarchitecture.family) in list_of_families
     return _impl
 
 
@@ -356,7 +356,7 @@ class MicroArchitecture(object):
         return match_alias(self)
 
     @property
-    def architecture_family(self):
+    def family(self):
         """Returns the architecture family a given target belongs to"""
         roots = [x for x in [self] + self.ancestors if not x.ancestors]
         msg = "a target is expected to belong to just one architecture family"

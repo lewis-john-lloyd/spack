@@ -396,7 +396,7 @@ def get_compilers(config, cspec=None, arch_spec=None):
 
         try:
             current_target = llnl.util.cpu.targets[str(arch_spec.target)]
-            family = str(current_target.architecture_family)
+            family = str(current_target.family)
         except KeyError:
             # TODO: Check if this exception handling makes sense, or if we
             # TODO: need to change / refactor tests
@@ -650,7 +650,7 @@ def make_compiler_list(detected_versions):
         implicit_rpaths = compiler_cls.determine_implicit_rpaths(paths)
         target = cpu.detect_host()
         compiler = compiler_cls(
-            spec, operating_system, str(target.architecture_family), paths,
+            spec, operating_system, str(target.family), paths,
             implicit_rpaths=implicit_rpaths
         )
         return [compiler]

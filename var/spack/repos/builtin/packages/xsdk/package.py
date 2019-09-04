@@ -93,8 +93,8 @@ class Xsdk(BundlePackage):
     depends_on('alquimia@xsdk-0.3.0', when='@0.3.0')
     depends_on('alquimia@xsdk-0.2.0', when='@xsdk-0.2.0')
 
-    depends_on('sundials@5.0.0-dev.1~int64+hypre+superlu-dist', when='@develop')
-    depends_on('sundials@5.0.0-dev.1~int64+hypre+superlu-dist', when='@0.5.0')
+    depends_on('sundials+superlu-dist', when='@0.5.0: %gcc@6.1:')
+    depends_on('sundials@5.0.0-dev.1~int64+hypre', when='@0.5.0')
     depends_on('sundials@3.2.1~int64+hypre', when='@0.4.0')
     depends_on('sundials@3.1.0~int64+hypre', when='@0.3.0')
 

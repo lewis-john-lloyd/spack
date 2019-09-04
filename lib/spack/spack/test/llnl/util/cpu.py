@@ -171,9 +171,9 @@ def test_generic_microarchitecture():
 
 
 def test_target_json_schema():
-    # The file targets.json contains static data i.e. data that is not meant to
-    # be modified by users directly. It is thus sufficient to validate it
-    # only once during unit tests.
+    # The file microarchitectures.json contains static data i.e. data that is
+    # not meant to be modified by users directly. It is thus sufficient to
+    # validate it only once during unit tests.
     json_data = llnl.util.cpu._targets_json.data
     jsonschema.validate(json_data, llnl.util.cpu.schema)
 

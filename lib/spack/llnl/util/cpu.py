@@ -132,14 +132,15 @@ class LazyDictionary(MutableMapping):
 
 
 def _load_targets_json():
-    """Loads ``targets.json`` in memory."""
+    """Loads ``microarchitectures.json`` in memory."""
     directory_name = os.path.dirname(os.path.abspath(__file__))
-    filename = os.path.join(directory_name, 'targets.json')
+    filename = os.path.join(directory_name, 'microarchitectures.json')
     with open(filename, 'r') as f:
         return json.load(f)
 
 
-#: In memory representation of the data in targets.json, loaded on first access
+#: In memory representation of the data in microarchitectures.json,
+#: loaded on first access
 _targets_json = LazyDictionary(_load_targets_json)
 
 #: Known predicates that can be used to construct feature aliases
@@ -179,8 +180,8 @@ def alias_predicate(predicate_schema):
     feature aliases.
 
     Args:
-        predicate_schema (dict): schema to be enforced in targets.json
-            for the predicate
+        predicate_schema (dict): schema to be enforced in
+            microarchitectures.json for the predicate
     """
     def decorator(func):
         name = func.__name__

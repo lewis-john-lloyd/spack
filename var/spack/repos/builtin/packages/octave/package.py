@@ -70,7 +70,11 @@ class Octave(AutotoolsPackage, GNUMirrorPackage):
     depends_on('sed', when=sys.platform == 'darwin', type='build')
     depends_on('pcre')
     depends_on('pkgconfig', type='build')
-
+    depends_on('texinfo', type='build')
+    depends_on('gperf', type='build')
+    depends_on('bison', type='build')
+    depends_on('flex', type='build')
+    
     # Strongly recommended dependencies
     depends_on('readline',     when='+readline')
 
@@ -84,14 +88,14 @@ class Octave(AutotoolsPackage, GNUMirrorPackage):
     depends_on('glpk',         when='+glpk')
     depends_on('gl2ps',        when='+gl2ps')
     depends_on('gnuplot',      when='+gnuplot')
-    depends_on('imagemagick',  when='+magick')
+    depends_on('graphicsmagick',  when='+magick')
     depends_on('hdf5',         when='+hdf5')
     depends_on('java',          when='+jdk')        # TODO: requires Java 6 ?
     depends_on('llvm',         when='+llvm')
     # depends_on('opengl',      when='+opengl')    # TODO: add package
     depends_on('qhull',        when='+qhull')
     depends_on('qrupdate',     when='+qrupdate')
-    # depends_on('qscintilla',  when='+qscintilla) # TODO: add package
+    depends_on('qscintilla',   when='+qscintilla')
     depends_on('qt+opengl',    when='+qt')
     depends_on('suite-sparse', when='+suitesparse')
     depends_on('zlib',         when='+zlib')
@@ -215,8 +219,7 @@ class Octave(AutotoolsPackage, GNUMirrorPackage):
             config_args.append("--without-glpk")
 
         if '+magick' in spec:
-            config_args.append("--with-magick=%s"
-                               % spec['imagemagick'].prefix.lib)
+            config_args.append("--with-magick=GraphicsMagick")
         else:
             config_args.append("--without-magick")
 

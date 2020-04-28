@@ -1,0 +1,11 @@
+--- spack-src/configure	2015-09-22 16:30:47.000000000 -0400
++++ spack-src2/configure	2019-09-04 15:32:51.907790245 -0400
+@@ -5453,7 +5453,7 @@
+ 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ok (ICC version ${gcc_version})" >&5
+ $as_echo "ok (ICC version ${gcc_version})" >&6; }
+ 	;;
+-     notclang-[3-9].*|notclang-[1-9][0-9]*)
++     notclang-[3-9]*|notclang-[3-9].*|notclang-[1-9][0-9]*)
+ 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ok (${gcc_version})" >&5
+ $as_echo "ok (${gcc_version})" >&6; }
+ 	;;

@@ -14,6 +14,17 @@
 #   ~/.spack/packages.yaml
 # -------------------------------------------------------------------------
 packages:
+  binutils:
+    variants: +headers+libiberty+plugins
+  cmake:
+    variants: +doc
+  python:
+    variants: +bz2+ctypes+dbm+lzma~nis~optimizations+pic+pyexpat+pythoncmd+readline+shared+sqlite3+ssl~tix+tkinter~ucs4+uuid+zlib
+  octave:
+    variants: +arpack+curl+fftw+fltk+fontconfig+freetype+jdk+gl2ps+glpk+gnuplot+hdf5+magick+opengl+qhull+qrupdate+qscintilla+qt+suitesparse+zlib
+    version: [4.4.1]
+  pcre:
+    variants: +jit
   all:
     compiler: [gcc, intel, pgi, clang, xl, nag, fj]
     providers:

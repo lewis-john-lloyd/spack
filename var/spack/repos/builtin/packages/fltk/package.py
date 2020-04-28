@@ -24,6 +24,7 @@ class Fltk(Package):
     version('1.3.3', sha256='f8398d98d7221d40e77bc7b19e761adaf2f1ef8bb0c30eceb7beb4f2273d0d97')
 
     depends_on('libx11')
+    depends_on('libxft')
 
     patch('font.patch', when='@1.3.3')
 
@@ -40,6 +41,8 @@ class Fltk(Package):
 
     def install(self, spec, prefix):
         options = ['--prefix=%s' % prefix,
+                   '--enable-x11',
+                   '--enable-xft',
                    '--enable-localjpeg',
                    '--enable-localpng',
                    '--enable-localzlib']

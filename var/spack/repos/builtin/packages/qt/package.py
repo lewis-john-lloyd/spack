@@ -65,7 +65,7 @@ class Qt(Package):
             description="Build with D-Bus support.")
     variant('phonon',     default=False,
             description="Build with phonon support.")
-    variant('opengl',     default=False,
+    variant('opengl',     default=True,
             description="Build with OpenGL support.")
     variant('sql',        default=True,
             description="Build with SQL support.")
